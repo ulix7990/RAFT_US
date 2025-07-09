@@ -1,1 +1,1 @@
-python run.py --model models/raft-sintel.pth --video path/to/your/video.avi
+python run.py --model models/raft-sintel.pth --input_path path/to/your/video.avi --output_path output_frames --interval 1

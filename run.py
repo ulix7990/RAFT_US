@@ -13,7 +13,6 @@ from raft import RAFT
 from utils.utils import InputPadder
 
 DEVICE = 'cuda'
-OUTPUT_PATH = 'output'
 
 def load_image(imfile_or_array):
     if isinstance(imfile_or_array, str):
@@ -51,13 +50,13 @@ def run(args):
     model.eval()
 
     # Create and clear output directory
-    if os.path.exists(OUTPUT_PATH):
-        shutil.rmtree(OUTPUT_PATH)
-    os.makedirs(OUTPUT_PATH)
+    if os.path.exists(args.output_path):
+        shutil.rmtree(args.output_path)
+    os.makedirs(args.output_path)
 
-    cap = cv2.VideoCapture(args.video)
+    cap = cv2.VideoCapture(args.input_path)
     if not cap.isOpened():
-        print(f"Error: Could not open video file {args.video}")
+        print(f"Error: Could not open video file {args.input_path}")
         return
 
     frame_idx = 0
@@ -67,9 +66,15 @@ def run(args):
         return
 
     while True:
-        ret, frame2_bgr = cap.read()
-        if not ret:
-            break # End of video
+        frame2_bgr = None
+        for _ in range(args.interval):
+            ret, temp_frame = cap.read()
+            if not ret:
+                break # End of video or error
+            frame2_bgr = temp_frame # Keep the last frame read as frame2
+
+        if frame2_bgr is None: # No more frames or error during interval read
+            break
 
         # Convert BGR to RGB for RAFT model
         frame1_rgb = cv2.cvtColor(frame1_bgr, cv2.COLOR_BGR2RGB)
@@ -96,7 +101,7 @@ def run(args):
 
         # Save the result
         output_filename = f"frame_{frame_idx:04d}_arrows.png"
-        output_path_full = os.path.join(OUTPUT_PATH, output_filename)
+        output_path_full = os.path.join(args.output_path, output_filename)
         cv2.imwrite(output_path_full, img_with_arrows)
         print(f"Saved {output_path_full}")
 
@@ -111,7 +116,9 @@ def run(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', help="restore checkpoint")
-    parser.add_argument('--video', help="path to input video file (e.g., .avi)")
+    parser.add_argument('--input_path', help="path to input video file (e.g., .avi)")
+    parser.add_argument('--output_path', default='output', help='path to output directory')
+    parser.add_argument('--interval', type=int, default=1, help='number of frames to skip between comparisons')
     parser.add_argument('--small', action='store_true', help='use small model')
     parser.add_argument('--mixed_precision', action='store_true', help='use mixed precision')
     parser.add_argument('--alternate_corr', action='store_true', help='use efficent correlation implementation')
