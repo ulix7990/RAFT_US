@@ -1,1 +1,1 @@
-python arrow_vis.py --model=models/raft-things.pth --path=demo-rmc
+python run.py --model models/raft-sintel.pth --video path/to/your/video.avi
