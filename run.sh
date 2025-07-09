@@ -1,0 +1,1 @@
+python arrow_vis.py --model=models/raft-things.pth --path=demo-rmc

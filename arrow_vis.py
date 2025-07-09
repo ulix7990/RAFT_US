@@ -8,14 +8,15 @@ import glob
 import numpy as np
 import torch
 from PIL import Image
+import shutil
 
 from raft import RAFT
 from utils import flow_viz
 from utils.utils import InputPadder
 
-
-
 DEVICE = 'cuda'
+OUTPUT_PATH = 'output'
+INTERVAL = 1
 
 def load_image(imfile):
     img = np.array(Image.open(imfile)).astype(np.uint8)
@@ -48,7 +49,7 @@ def viz(img, flo, padder, imfile1):
 
     # Generate output filename and save
     output_filename = os.path.basename(imfile1).replace('.png', '_arrows.png')
-    output_path = os.path.join('demo-frames', output_filename)
+    output_path = os.path.join('output', output_filename)
     cv2.imwrite(output_path, img_bgr)
     print(f"Saved arrow visualization to: {output_path}")
 
@@ -66,7 +67,7 @@ def demo(args):
                  glob.glob(os.path.join(args.path, '*.jpg'))
         
         images = sorted(images)
-        for imfile1, imfile2 in zip(images[:-1], images[1:]):
+        for imfile1, imfile2 in zip(images[:-1], images[INTERVAL:]):
             image1 = load_image(imfile1)
             image2 = load_image(imfile2)
 
@@ -90,5 +91,13 @@ if __name__ == '__main__':
     parser.add_argument('--mixed_precision', action='store_true', help='use mixed precision')
     parser.add_argument('--alternate_corr', action='store_true', help='use efficent correlation implementation')
     args = parser.parse_args()
+
+
+    # 경로가 존재하면 삭제
+    if os.path.exists(OUTPUT_PATH):
+        shutil.rmtree(OUTPUT_PATH)
+
+    # 디렉토리 다시 생성
+    os.makedirs(OUTPUT_PATH)
 
     demo(args)
