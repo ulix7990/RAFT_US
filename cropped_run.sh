@@ -1,0 +1,5 @@
+python cropped_run.py 
+  --model models/raft-sintel.pth \
+  --input_path path/to/your/video.avi \
+  --output_path output_frames \
+  --interval 1
