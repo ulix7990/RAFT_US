@@ -7,3 +7,5 @@ models
 build
 correlation.egg-info
 models.zip
+input
+output_frames
