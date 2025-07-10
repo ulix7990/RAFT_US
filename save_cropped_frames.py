@@ -185,5 +185,5 @@ def detect_red_grid(video_path):
     cap_save.release()
 
 if __name__ == "__main__":
-    video_file = "/home/ulix7990/rmc_slump_ws/grid_test/data/rmc_01.mp4"
+    video_file = "./input/rmc_01.mp4"
     detect_red_grid(video_file)
