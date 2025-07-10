@@ -1,0 +1,1 @@
+python evaluate_classifier.py --data_dir saved_optical_flow --num_classes 5 --sequence_length 10 --img_size 368 496 --batch_size 4 --model_path convgru_classifier.pth

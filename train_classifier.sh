@@ -1,0 +1,1 @@
+python train_classifier.py --data_dir saved_optical_flow --num_classes 5 --sequence_length 10 --img_size 368 496 --epochs 10 --batch_size 4 --model_save_path convgru_classifier.pth
