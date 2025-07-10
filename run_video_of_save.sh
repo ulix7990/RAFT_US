@@ -1,1 +1,1 @@
-python run_video_of_save.py --model models/raft-sintel.pth --input_path input/rmc_01.mp4 --output_path output_of_data --interval 5
+python run_video_of_save.py --model models/raft-sintel.pth --input_path input/rmc_01.mp4 --output_path saved_optical_flow --interval 5

@@ -8,3 +8,7 @@ build
 correlation.egg-info
 models.zip
 input
+output/
+test_code/output/
+test_code/output_cropped/
+test_code/output_whole/
