@@ -1,1 +1,1 @@
-python run.py --model models/raft-sintel.pth --input_path input/rmc_01.mp4 --output_path output_frames --interval 5
+python run_video_arrow_vis.py --model models/raft-sintel.pth --input_path input/rmc_01.mp4 --output_path output_frames --interval 5
