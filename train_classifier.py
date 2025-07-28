@@ -6,6 +6,7 @@ import numpy as np
 import os
 import glob
 import argparse
+import wandb  # Import wandb
 
 from core.convgru_classifier import ConvGRUClassifier
 
@@ -57,20 +58,22 @@ class OpticalFlowDataset(Dataset):
 
 
 def train_classifier(args):
+    # Initialize wandb
+    wandb.init(project="optical-flow-classification", config=args)
+
     # Hyperparameters
     input_dim = 2  # Optical flow has 2 channels (dx, dy)
     hidden_dims = [64, 128] # Example hidden dimensions for ConvGRU layers
     kernel_size = 3
     n_layers = 2
     num_classes = args.num_classes
-    learning_rate = 0.001
+    learning_rate = args.learning_rate  # Use learning_rate from args
     num_epochs = args.epochs
     batch_size = args.batch_size
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Dataset and DataLoader
-    # Note: num_classes and img_size are no longer needed for dataset creation
     dataset = OpticalFlowDataset(data_dir=args.data_dir, sequence_length=args.sequence_length)
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
@@ -78,6 +81,9 @@ def train_classifier(args):
     model = ConvGRUClassifier(input_dim, hidden_dims, kernel_size, n_layers, num_classes).to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+
+    # Log model architecture to wandb
+    wandb.watch(model, log="all")
 
     # Training loop
     print("Starting training...")
@@ -94,14 +100,22 @@ def train_classifier(args):
             optimizer.step()
 
             running_loss += loss.item()
+            # Log loss to wandb
+            wandb.log({"batch_loss": loss.item()})
 
-        print(f"Epoch {epoch+1}/{num_epochs}, Loss: {running_loss/len(dataloader):.4f}")
+        epoch_loss = running_loss / len(dataloader)
+        print(f"Epoch {epoch+1}/{num_epochs}, Loss: {epoch_loss:.4f}")
+        # Log epoch loss to wandb
+        wandb.log({"epoch_loss": epoch_loss, "epoch": epoch + 1})
 
     print("Training complete.")
 
     # Save the trained model
     torch.save(model.state_dict(), args.model_save_path)
     print(f"Model saved to {args.model_save_path}")
+    
+    # Finish wandb run
+    wandb.finish()
 
 
 if __name__ == '__main__':
@@ -110,9 +124,10 @@ if __name__ == '__main__':
     parser.add_argument('--num_classes', type=int, default=5, help='Number of classes for classification')
     parser.add_argument('--sequence_length', type=int, default=10, help='Fixed length of optical flow sequences for training')
     # img_size is no longer needed as it's inferred from the data
-    # parser.add_argument('--img_size', type=int, nargs=2, default=[368, 496], help='Height and width of optical flow frames')
+    parser.add_argument('--img_size', type=int, nargs=2, default=[368, 496], help='Height and width of optical flow frames')
     parser.add_argument('--epochs', type=int, default=10, help='Number of training epochs')
     parser.add_argument('--batch_size', type=int, default=4, help='Batch size for training')
+    parser.add_argument('--learning_rate', type=float, default=0.001, help='Learning rate for optimizer')
     parser.add_argument('--model_save_path', type=str, default='./convgru_classifier.pth', help='Path to save the trained model')
 
     args = parser.parse_args()
