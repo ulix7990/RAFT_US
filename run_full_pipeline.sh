@@ -6,7 +6,7 @@ set -e
 # --- Configuration --- #
 
 # Base directory of the RAFT_US project
-RAFT_PROJECT_DIR="/home/ulix7990/rmc_slump_ws/RAFT_US"
+RAFT_PROJECT_DIR="."
 
 # Directory containing your original video files (e.g., where your '03', '04', '07' folders are)
 INPUT_VIDEO_DIR="${RAFT_PROJECT_DIR}/rmc_video"
@@ -40,7 +40,7 @@ python "${RAFT_PROJECT_DIR}/run_video_of_save.py" \
     --model "${RAFT_MODEL_PATH}" \
     --input_path "${PREPARED_VIDEO_DIR}" \
     --output_path "${OUTPUT_OPTICAL_FLOW_DIR}" \
-    --small # Add --small if you are using the small model, remove otherwise
+    --interval 5
     # Add other arguments for run_video_of_save.py as needed, e.g., --interval 2
 echo "Step 2 complete."
 
@@ -52,13 +52,12 @@ python "${RAFT_PROJECT_DIR}/trim_sequences.py" \
 echo "Step 3 complete."
 
 echo "--- Step 4: Training the classifier ---"
-python "${RAFT_PROJECT_DIR}/train_classifier.py" 
-    --data_dir "${PROCESSED_SEQUENCES_DIR}" 
-    --num_classes 5 
-    --sequence_length 10 
-    --img_size 368 496 
-    --epochs 10 
-    --batch_size 4 
+python "${RAFT_PROJECT_DIR}/train_classifier.py" \
+    --data_dir "${PROCESSED_SEQUENCES_DIR}" \
+    --num_classes 3 \
+    --sequence_length 10 \
+    --epochs 10 \
+    --batch_size 1 \
     --model_save_path "${CLASSIFIER_MODEL_SAVE_PATH}"
 echo "Step 4 complete."
 
