@@ -221,6 +221,11 @@ def train_classifier(args):
     if len(dataset) == 0:
         print("⚠️ 데이터셋이 비어 있습니다. 데이터 경로를 확인하세요.")
         return
+    
+    # 첫 샘플 해상도 출력
+    seq0, _ = dataset[0]             # (T, C, H, W)
+    T, C, H, W = seq0.shape
+    print(f"[INFO] 첫 샘플 해상도: H={H}, W={W} (참고: T={T}, C={C})")
 
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
@@ -244,6 +249,11 @@ def train_classifier(args):
         model.train()
         running_loss = 0.0
         for i, (inputs, labels) in enumerate(dataloader):
+            # 첫 배치 입력 크기 출력
+            if epoch == 0 and i == 0:
+                b, t, c, h, w = inputs.shape
+                print(f"[INFO] 모델 입력(첫 배치): B={b}, T={t}, C={c}, H={h}, W={w}")
+
             inputs, labels = inputs.to(device), labels.to(device)
 
             optimizer.zero_grad()
