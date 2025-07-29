@@ -9,7 +9,7 @@ set -e
 RAFT_PROJECT_DIR="/home/ulix7990/rmc_slump_ws/RAFT_US"
 
 # Directory containing your original video files (e.g., where your '03', '04', '07' folders are)
-INPUT_VIDEO_DIR="/input_video_dir"
+INPUT_VIDEO_DIR="${RAFT_PROJECT_DIR}/rmc_video"
 
 # Directory where the prepared videos (renamed) will be stored
 PREPARED_VIDEO_DIR="${RAFT_PROJECT_DIR}/data/prepared_raft_videos"
