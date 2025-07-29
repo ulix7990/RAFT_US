@@ -234,11 +234,21 @@ def train_classifier(args):
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
-    # ✅ 사전 샘플로 메모리/입력 크기 오류 체크
+    # === 사전 배치/메모리/입력 크기 체크 ===
+    try:
+        first_inputs, first_labels = next(iter(dataloader))  # 첫 배치 가져오기
+    except StopIteration:
+        print("⚠️ 데이터셋에서 배치를 가져올 수 없습니다.")
+        return
+
+    # 첫 배치 크기 출력
+    b, t, c, h, w = first_inputs.shape
+    print(f"[INFO] 모델 입력(첫 배치): B={b}, T={t}, C={c}, H={h}, W={w}")
+
+    # no_grad로 1회 forward → 메모리/shape 오류 조기 검출
     with torch.no_grad():
         try:
-            sample = dataset[0][0].unsqueeze(0).to(device)  # (1, T, C, H, W)
-            model(sample)
+            _ = model(first_inputs.to(device))  # 필요하면 .float() 추가
             print("[DEBUG] 모델 입력 처리 성공")
         except RuntimeError as e:
             print(f"[ERROR] 입력 또는 메모리 오류 발생: {e}")
@@ -249,11 +259,6 @@ def train_classifier(args):
         model.train()
         running_loss = 0.0
         for i, (inputs, labels) in enumerate(dataloader):
-            # 첫 배치 입력 크기 출력
-            if epoch == 0 and i == 0:
-                b, t, c, h, w = inputs.shape
-                print(f"[INFO] 모델 입력(첫 배치): B={b}, T={t}, C={c}, H={h}, W={w}")
-
             inputs, labels = inputs.to(device), labels.to(device)
 
             optimizer.zero_grad()
