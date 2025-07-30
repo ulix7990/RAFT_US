@@ -1,0 +1,348 @@
+[INFO] GPU 사용 가능 여부: True
+[INFO] 사용 중인 GPU: NVIDIA GeForce RTX 3090
+[INFO] GPU 메모리를 정리했습니다.
+[INFO] 현재 메모리 상태 요약:
+ |===========================================================================|
+|                  PyTorch CUDA memory summary, device ID 0                 |
+|---------------------------------------------------------------------------|
+|            CUDA OOMs: 0            |        cudaMalloc retries: 0         |
+|===========================================================================|
+|        Metric         | Cur Usage  | Peak Usage | Tot Alloc  | Tot Freed  |
+|---------------------------------------------------------------------------|
+| Allocated memory      |      0 B   |      0 B   |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Active memory         |      0 B   |      0 B   |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Requested memory      |      0 B   |      0 B   |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| GPU reserved memory   |      0 B   |      0 B   |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Non-releasable memory |      0 B   |      0 B   |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Allocations           |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Active allocs         |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| GPU reserved segments |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Non-releasable allocs |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Oversize allocations  |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Oversize GPU segments |       0    |       0    |       0    |       0    |
+|===========================================================================|
+
+[DEBUG] Dataset initialized with data_dir: /home/cvtech/rmc_slump_ws/RAFT_US/data/processed_sequences
+[DEBUG] Found class directories: ['/home/cvtech/rmc_slump_ws/RAFT_US/data/processed_sequences/class120', '/home/cvtech/rmc_slump_ws/RAFT_US/data/processed_sequences/class150', '/home/cvtech/rmc_slump_ws/RAFT_US/data/processed_sequences/class80']
+[INFO] Original class label mapping: {80: 0, 120: 1, 150: 2}
+[INFO] Actual number of unique classes in dataset: 3
+[DEBUG] Total samples populated in __init__: 18
+불러온 전체 데이터 샘플 수: 18
+[INFO] 첫 샘플 해상도: H=128, W=128 (참고: T=10, C=2)
+[INFO] 첫 샘플의 매핑된 클래스 레이블: 1
+[INFO] 데이터셋 내 실제 고유 클래스 개수: 3
+[INFO] `--num_classes` 인자 값 (모델 정의용): 3
+[INFO] 데이터셋 분할: 학습 14개, 검증 1개, 테스트 3개
+[INFO] 모델 입력(첫 학습 배치): B=1, T=10, C=2, H=128, W=128
+[INFO] 첫 학습 배치의 매핑된 레이블: [2]
+[DEBUG] 모델 포워드 패스 성공
+Starting training...
+Epoch 1/100 - Train Loss: 0.8952, Train Acc: 57.14%
+Epoch 1/100 - Val Loss: 0.2513, Val Acc: 100.00%
+👍 Best validation accuracy improved. Model saved to ./convgru_classifier.pth
+Epoch 2/100 - Train Loss: 0.6118, Train Acc: 64.29%
+Epoch 2/100 - Val Loss: 0.2503, Val Acc: 100.00%
+Epoch 3/100 - Train Loss: 0.5364, Train Acc: 71.43%
+Epoch 3/100 - Val Loss: 0.1369, Val Acc: 100.00%
+Epoch 4/100 - Train Loss: 0.4367, Train Acc: 78.57%
+Epoch 4/100 - Val Loss: 0.1530, Val Acc: 100.00%
+Epoch 5/100 - Train Loss: 0.4176, Train Acc: 85.71%
+Epoch 5/100 - Val Loss: 0.1190, Val Acc: 100.00%
+Epoch 6/100 - Train Loss: 0.3288, Train Acc: 85.71%
+Epoch 6/100 - Val Loss: 0.0929, Val Acc: 100.00%
+Epoch 7/100 - Train Loss: 0.2709, Train Acc: 100.00%
+Epoch 7/100 - Val Loss: 0.0629, Val Acc: 100.00%
+Epoch 8/100 - Train Loss: 0.4233, Train Acc: 85.71%
+Epoch 8/100 - Val Loss: 0.2047, Val Acc: 100.00%
+Epoch 9/100 - Train Loss: 0.2875, Train Acc: 92.86%
+Epoch 9/100 - Val Loss: 0.0890, Val Acc: 100.00%
+Epoch 10/100 - Train Loss: 0.1965, Train Acc: 92.86%
+Epoch 10/100 - Val Loss: 0.2355, Val Acc: 100.00%
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 0 that is less than the current step 13. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 1 that is less than the current step 27. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 2 that is less than the current step 41. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 3 that is less than the current step 55. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 4 that is less than the current step 69. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 5 that is less than the current step 83. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 6 that is less than the current step 97. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 7 that is less than the current step 111. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 8 that is less than the current step 125. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 9 that is less than the current step 139. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+Epoch 11/100 - Train Loss: 0.1647, Train Acc: 100.00%
+Epoch 11/100 - Val Loss: 0.0581, Val Acc: 100.00%
+Epoch 12/100 - Train Loss: 0.1013, Train Acc: 100.00%
+Epoch 12/100 - Val Loss: 0.0445, Val Acc: 100.00%
+Epoch 13/100 - Train Loss: 0.0718, Train Acc: 100.00%
+Epoch 13/100 - Val Loss: 0.0346, Val Acc: 100.00%
+Epoch 14/100 - Train Loss: 0.0531, Train Acc: 100.00%
+Epoch 14/100 - Val Loss: 0.0291, Val Acc: 100.00%
+Epoch 15/100 - Train Loss: 0.0403, Train Acc: 100.00%
+Epoch 15/100 - Val Loss: 0.0252, Val Acc: 100.00%
+Epoch 16/100 - Train Loss: 0.0322, Train Acc: 100.00%
+Epoch 16/100 - Val Loss: 0.0221, Val Acc: 100.00%
+Epoch 17/100 - Train Loss: 0.0267, Train Acc: 100.00%
+Epoch 17/100 - Val Loss: 0.0191, Val Acc: 100.00%
+Epoch 18/100 - Train Loss: 0.0233, Train Acc: 100.00%
+Epoch 18/100 - Val Loss: 0.0170, Val Acc: 100.00%
+Epoch 19/100 - Train Loss: 0.0207, Train Acc: 100.00%
+Epoch 19/100 - Val Loss: 0.0157, Val Acc: 100.00%
+Epoch 20/100 - Train Loss: 0.0185, Train Acc: 100.00%
+Epoch 20/100 - Val Loss: 0.0145, Val Acc: 100.00%
+Epoch 21/100 - Train Loss: 0.0169, Train Acc: 100.00%
+Epoch 21/100 - Val Loss: 0.0135, Val Acc: 100.00%
+Epoch 22/100 - Train Loss: 0.0155, Train Acc: 100.00%
+Epoch 22/100 - Val Loss: 0.0126, Val Acc: 100.00%
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 10 that is less than the current step 153. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 11 that is less than the current step 167. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 12 that is less than the current step 181. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 13 that is less than the current step 195. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 14 that is less than the current step 209. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 15 that is less than the current step 223. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 16 that is less than the current step 237. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 17 that is less than the current step 251. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 18 that is less than the current step 265. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 19 that is less than the current step 279. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 20 that is less than the current step 293. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 21 that is less than the current step 307. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+Epoch 23/100 - Train Loss: 0.0143, Train Acc: 100.00%
+Epoch 23/100 - Val Loss: 0.0116, Val Acc: 100.00%
+Epoch 24/100 - Train Loss: 0.0133, Train Acc: 100.00%
+Epoch 24/100 - Val Loss: 0.0109, Val Acc: 100.00%
+Epoch 25/100 - Train Loss: 0.0124, Train Acc: 100.00%
+Epoch 25/100 - Val Loss: 0.0102, Val Acc: 100.00%
+Epoch 26/100 - Train Loss: 0.0116, Train Acc: 100.00%
+Epoch 26/100 - Val Loss: 0.0096, Val Acc: 100.00%
+Epoch 27/100 - Train Loss: 0.0109, Train Acc: 100.00%
+Epoch 27/100 - Val Loss: 0.0090, Val Acc: 100.00%
+Epoch 28/100 - Train Loss: 0.0102, Train Acc: 100.00%
+Epoch 28/100 - Val Loss: 0.0085, Val Acc: 100.00%
+Epoch 29/100 - Train Loss: 0.0097, Train Acc: 100.00%
+Epoch 29/100 - Val Loss: 0.0080, Val Acc: 100.00%
+Epoch 30/100 - Train Loss: 0.0091, Train Acc: 100.00%
+Epoch 30/100 - Val Loss: 0.0076, Val Acc: 100.00%
+Epoch 31/100 - Train Loss: 0.0087, Train Acc: 100.00%
+Epoch 31/100 - Val Loss: 0.0072, Val Acc: 100.00%
+Epoch 32/100 - Train Loss: 0.0082, Train Acc: 100.00%
+Epoch 32/100 - Val Loss: 0.0068, Val Acc: 100.00%
+Epoch 33/100 - Train Loss: 0.0078, Train Acc: 100.00%
+Epoch 33/100 - Val Loss: 0.0065, Val Acc: 100.00%
+Epoch 34/100 - Train Loss: 0.0074, Train Acc: 100.00%
+Epoch 34/100 - Val Loss: 0.0062, Val Acc: 100.00%
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 22 that is less than the current step 321. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 23 that is less than the current step 335. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 24 that is less than the current step 349. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 25 that is less than the current step 363. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 26 that is less than the current step 377. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 27 that is less than the current step 391. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 28 that is less than the current step 405. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 29 that is less than the current step 419. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 30 that is less than the current step 433. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 31 that is less than the current step 447. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 32 that is less than the current step 461. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 33 that is less than the current step 475. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+Epoch 35/100 - Train Loss: 0.0071, Train Acc: 100.00%
+Epoch 35/100 - Val Loss: 0.0059, Val Acc: 100.00%
+Epoch 36/100 - Train Loss: 0.0068, Train Acc: 100.00%
+Epoch 36/100 - Val Loss: 0.0057, Val Acc: 100.00%
+Epoch 37/100 - Train Loss: 0.0065, Train Acc: 100.00%
+Epoch 37/100 - Val Loss: 0.0054, Val Acc: 100.00%
+Epoch 38/100 - Train Loss: 0.0062, Train Acc: 100.00%
+Epoch 38/100 - Val Loss: 0.0052, Val Acc: 100.00%
+Epoch 39/100 - Train Loss: 0.0060, Train Acc: 100.00%
+Epoch 39/100 - Val Loss: 0.0050, Val Acc: 100.00%
+Epoch 40/100 - Train Loss: 0.0057, Train Acc: 100.00%
+Epoch 40/100 - Val Loss: 0.0048, Val Acc: 100.00%
+Epoch 41/100 - Train Loss: 0.0055, Train Acc: 100.00%
+Epoch 41/100 - Val Loss: 0.0046, Val Acc: 100.00%
+Epoch 42/100 - Train Loss: 0.0053, Train Acc: 100.00%
+Epoch 42/100 - Val Loss: 0.0044, Val Acc: 100.00%
+Epoch 43/100 - Train Loss: 0.0051, Train Acc: 100.00%
+Epoch 43/100 - Val Loss: 0.0043, Val Acc: 100.00%
+Epoch 44/100 - Train Loss: 0.0049, Train Acc: 100.00%
+Epoch 44/100 - Val Loss: 0.0041, Val Acc: 100.00%
+Epoch 45/100 - Train Loss: 0.0048, Train Acc: 100.00%
+Epoch 45/100 - Val Loss: 0.0040, Val Acc: 100.00%
+Epoch 46/100 - Train Loss: 0.0046, Train Acc: 100.00%
+Epoch 46/100 - Val Loss: 0.0039, Val Acc: 100.00%
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 34 that is less than the current step 489. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 35 that is less than the current step 503. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 36 that is less than the current step 517. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 37 that is less than the current step 531. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 38 that is less than the current step 545. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 39 that is less than the current step 559. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 40 that is less than the current step 573. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 41 that is less than the current step 587. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 42 that is less than the current step 601. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 43 that is less than the current step 615. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 44 that is less than the current step 629. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 45 that is less than the current step 643. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+Epoch 47/100 - Train Loss: 0.0044, Train Acc: 100.00%
+Epoch 47/100 - Val Loss: 0.0037, Val Acc: 100.00%
+Epoch 48/100 - Train Loss: 0.0043, Train Acc: 100.00%
+Epoch 48/100 - Val Loss: 0.0036, Val Acc: 100.00%
+Epoch 49/100 - Train Loss: 0.0042, Train Acc: 100.00%
+Epoch 49/100 - Val Loss: 0.0035, Val Acc: 100.00%
+Epoch 50/100 - Train Loss: 0.0040, Train Acc: 100.00%
+Epoch 50/100 - Val Loss: 0.0034, Val Acc: 100.00%
+Epoch 51/100 - Train Loss: 0.0039, Train Acc: 100.00%
+Epoch 51/100 - Val Loss: 0.0033, Val Acc: 100.00%
+Epoch 52/100 - Train Loss: 0.0038, Train Acc: 100.00%
+Epoch 52/100 - Val Loss: 0.0032, Val Acc: 100.00%
+Epoch 53/100 - Train Loss: 0.0037, Train Acc: 100.00%
+Epoch 53/100 - Val Loss: 0.0031, Val Acc: 100.00%
+Epoch 54/100 - Train Loss: 0.0036, Train Acc: 100.00%
+Epoch 54/100 - Val Loss: 0.0030, Val Acc: 100.00%
+Epoch 55/100 - Train Loss: 0.0035, Train Acc: 100.00%
+Epoch 55/100 - Val Loss: 0.0029, Val Acc: 100.00%
+Epoch 56/100 - Train Loss: 0.0034, Train Acc: 100.00%
+Epoch 56/100 - Val Loss: 0.0028, Val Acc: 100.00%
+Epoch 57/100 - Train Loss: 0.0033, Train Acc: 100.00%
+Epoch 57/100 - Val Loss: 0.0028, Val Acc: 100.00%
+Epoch 58/100 - Train Loss: 0.0032, Train Acc: 100.00%
+Epoch 58/100 - Val Loss: 0.0027, Val Acc: 100.00%
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 46 that is less than the current step 657. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 47 that is less than the current step 671. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 48 that is less than the current step 685. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 49 that is less than the current step 699. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 50 that is less than the current step 713. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 51 that is less than the current step 727. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 52 that is less than the current step 741. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 53 that is less than the current step 755. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 54 that is less than the current step 769. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 55 that is less than the current step 783. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 56 that is less than the current step 797. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 57 that is less than the current step 811. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+Epoch 59/100 - Train Loss: 0.0031, Train Acc: 100.00%
+Epoch 59/100 - Val Loss: 0.0026, Val Acc: 100.00%
+Epoch 60/100 - Train Loss: 0.0030, Train Acc: 100.00%
+Epoch 60/100 - Val Loss: 0.0025, Val Acc: 100.00%
+Epoch 61/100 - Train Loss: 0.0029, Train Acc: 100.00%
+Epoch 61/100 - Val Loss: 0.0025, Val Acc: 100.00%
+Epoch 62/100 - Train Loss: 0.0029, Train Acc: 100.00%
+Epoch 62/100 - Val Loss: 0.0024, Val Acc: 100.00%
+Epoch 63/100 - Train Loss: 0.0028, Train Acc: 100.00%
+Epoch 63/100 - Val Loss: 0.0023, Val Acc: 100.00%
+Epoch 64/100 - Train Loss: 0.0027, Train Acc: 100.00%
+Epoch 64/100 - Val Loss: 0.0023, Val Acc: 100.00%
+Epoch 65/100 - Train Loss: 0.0026, Train Acc: 100.00%
+Epoch 65/100 - Val Loss: 0.0022, Val Acc: 100.00%
+Epoch 66/100 - Train Loss: 0.0026, Train Acc: 100.00%
+Epoch 66/100 - Val Loss: 0.0022, Val Acc: 100.00%
+Epoch 67/100 - Train Loss: 0.0025, Train Acc: 100.00%
+Epoch 67/100 - Val Loss: 0.0021, Val Acc: 100.00%
+Epoch 68/100 - Train Loss: 0.0025, Train Acc: 100.00%
+Epoch 68/100 - Val Loss: 0.0021, Val Acc: 100.00%
+Epoch 69/100 - Train Loss: 0.0024, Train Acc: 100.00%
+Epoch 69/100 - Val Loss: 0.0020, Val Acc: 100.00%
+Epoch 70/100 - Train Loss: 0.0023, Train Acc: 100.00%
+Epoch 70/100 - Val Loss: 0.0020, Val Acc: 100.00%
+Epoch 71/100 - Train Loss: 0.0023, Train Acc: 100.00%
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 58 that is less than the current step 825. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 59 that is less than the current step 839. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 60 that is less than the current step 853. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 61 that is less than the current step 867. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 62 that is less than the current step 881. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 63 that is less than the current step 895. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 64 that is less than the current step 909. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 65 that is less than the current step 923. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 66 that is less than the current step 937. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 67 that is less than the current step 951. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 68 that is less than the current step 965. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 69 that is less than the current step 979. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+Epoch 71/100 - Val Loss: 0.0019, Val Acc: 100.00%
+Epoch 72/100 - Train Loss: 0.0022, Train Acc: 100.00%
+Epoch 72/100 - Val Loss: 0.0019, Val Acc: 100.00%
+Epoch 73/100 - Train Loss: 0.0022, Train Acc: 100.00%
+Epoch 73/100 - Val Loss: 0.0019, Val Acc: 100.00%
+Epoch 74/100 - Train Loss: 0.0021, Train Acc: 100.00%
+Epoch 74/100 - Val Loss: 0.0018, Val Acc: 100.00%
+Epoch 75/100 - Train Loss: 0.0021, Train Acc: 100.00%
+Epoch 75/100 - Val Loss: 0.0018, Val Acc: 100.00%
+Epoch 76/100 - Train Loss: 0.0021, Train Acc: 100.00%
+Epoch 76/100 - Val Loss: 0.0017, Val Acc: 100.00%
+Epoch 77/100 - Train Loss: 0.0020, Train Acc: 100.00%
+Epoch 77/100 - Val Loss: 0.0017, Val Acc: 100.00%
+Epoch 78/100 - Train Loss: 0.0020, Train Acc: 100.00%
+Epoch 78/100 - Val Loss: 0.0017, Val Acc: 100.00%
+Epoch 79/100 - Train Loss: 0.0019, Train Acc: 100.00%
+Epoch 79/100 - Val Loss: 0.0016, Val Acc: 100.00%
+Epoch 80/100 - Train Loss: 0.0019, Train Acc: 100.00%
+Epoch 80/100 - Val Loss: 0.0016, Val Acc: 100.00%
+Epoch 81/100 - Train Loss: 0.0018, Train Acc: 100.00%
+Epoch 81/100 - Val Loss: 0.0016, Val Acc: 100.00%
+Epoch 82/100 - Train Loss: 0.0018, Train Acc: 100.00%
+Epoch 82/100 - Val Loss: 0.0015, Val Acc: 100.00%
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 70 that is less than the current step 993. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 71 that is less than the current step 1007. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 72 that is less than the current step 1021. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 73 that is less than the current step 1035. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 74 that is less than the current step 1049. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 75 that is less than the current step 1063. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 76 that is less than the current step 1077. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 77 that is less than the current step 1091. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 78 that is less than the current step 1105. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 79 that is less than the current step 1119. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 80 that is less than the current step 1133. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 81 that is less than the current step 1147. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+Epoch 83/100 - Train Loss: 0.0018, Train Acc: 100.00%
+Epoch 83/100 - Val Loss: 0.0015, Val Acc: 100.00%
+Epoch 84/100 - Train Loss: 0.0017, Train Acc: 100.00%
+Epoch 84/100 - Val Loss: 0.0015, Val Acc: 100.00%
+Epoch 85/100 - Train Loss: 0.0017, Train Acc: 100.00%
+Epoch 85/100 - Val Loss: 0.0014, Val Acc: 100.00%
+Epoch 86/100 - Train Loss: 0.0017, Train Acc: 100.00%
+Epoch 86/100 - Val Loss: 0.0014, Val Acc: 100.00%
+Epoch 87/100 - Train Loss: 0.0016, Train Acc: 100.00%
+Epoch 87/100 - Val Loss: 0.0014, Val Acc: 100.00%
+Epoch 88/100 - Train Loss: 0.0016, Train Acc: 100.00%
+Epoch 88/100 - Val Loss: 0.0014, Val Acc: 100.00%
+Epoch 89/100 - Train Loss: 0.0016, Train Acc: 100.00%
+Epoch 89/100 - Val Loss: 0.0013, Val Acc: 100.00%
+Epoch 90/100 - Train Loss: 0.0015, Train Acc: 100.00%
+Epoch 90/100 - Val Loss: 0.0013, Val Acc: 100.00%
+Epoch 91/100 - Train Loss: 0.0015, Train Acc: 100.00%
+Epoch 91/100 - Val Loss: 0.0013, Val Acc: 100.00%
+Epoch 92/100 - Train Loss: 0.0015, Train Acc: 100.00%
+Epoch 92/100 - Val Loss: 0.0013, Val Acc: 100.00%
+Epoch 93/100 - Train Loss: 0.0015, Train Acc: 100.00%
+Epoch 93/100 - Val Loss: 0.0012, Val Acc: 100.00%
+Epoch 94/100 - Train Loss: 0.0014, Train Acc: 100.00%
+Epoch 94/100 - Val Loss: 0.0012, Val Acc: 100.00%
+Epoch 95/100 - Train Loss: 0.0014, Train Acc: 100.00%
+Epoch 95/100 - Val Loss: 0.0012, Val Acc: 100.00%
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 82 that is less than the current step 1161. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 83 that is less than the current step 1175. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 84 that is less than the current step 1189. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 85 that is less than the current step 1203. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 86 that is less than the current step 1217. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 87 that is less than the current step 1231. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 88 that is less than the current step 1245. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 89 that is less than the current step 1259. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 90 that is less than the current step 1273. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 91 that is less than the current step 1287. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 92 that is less than the current step 1301. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 93 that is less than the current step 1315. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 94 that is less than the current step 1329. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+Epoch 96/100 - Train Loss: 0.0014, Train Acc: 100.00%
+Epoch 96/100 - Val Loss: 0.0012, Val Acc: 100.00%
+Epoch 97/100 - Train Loss: 0.0014, Train Acc: 100.00%
+Epoch 97/100 - Val Loss: 0.0012, Val Acc: 100.00%
+Epoch 98/100 - Train Loss: 0.0013, Train Acc: 100.00%
+Epoch 98/100 - Val Loss: 0.0011, Val Acc: 100.00%
+Epoch 99/100 - Train Loss: 0.0013, Train Acc: 100.00%
+Epoch 99/100 - Val Loss: 0.0011, Val Acc: 100.00%
+Epoch 100/100 - Train Loss: 0.0013, Train Acc: 100.00%
+Epoch 100/100 - Val Loss: 0.0011, Val Acc: 100.00%
+Training complete.
+Starting final testing...
+Final Test Loss: 5.6825, Final Test Acc: 33.33%

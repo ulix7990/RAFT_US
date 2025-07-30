@@ -48,7 +48,9 @@ echo "--- Step 3: Trimming sequences from optical flow data ---"
 python "${RAFT_PROJECT_DIR}/trim_sequences.py" \
     --input_dir "${OUTPUT_OPTICAL_FLOW_DIR}" \
     --output_dir "${PROCESSED_SEQUENCES_DIR}" \
-    --sequence_length 10
+    --sequence_length 10 \
+    --roi_width 128 \
+    --roi_height 128 # 여기에 원하는 하단 중앙 ROI의 너비와 높이를 지정
 echo "Step 3 complete."
 
 echo "--- Step 4: Training the classifier ---"
@@ -56,7 +58,7 @@ python "${RAFT_PROJECT_DIR}/train_classifier.py" \
     --data_dir "${PROCESSED_SEQUENCES_DIR}" \
     --num_classes 3 \
     --sequence_length 10 \
-    --epochs 10 \
+    --epochs 100 \
     --batch_size 1 \
     --model_save_path "${CLASSIFIER_MODEL_SAVE_PATH}"
 echo "Step 4 complete."
