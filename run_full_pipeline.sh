@@ -27,40 +27,69 @@ PROCESSED_SEQUENCES_DIR="${RAFT_PROJECT_DIR}/data/processed_sequences"
 # Path to save the trained classifier model
 CLASSIFIER_MODEL_SAVE_PATH="${RAFT_PROJECT_DIR}/convgru_classifier.pth"
 
-# --- Script Execution --- #
+# --- Script Execution Logic --- #
 
-echo "--- Step 1: Preparing video files for RAFT ---"
-python "${RAFT_PROJECT_DIR}/prepare_videos_for_raft.py" \
-    --input_dir "${INPUT_VIDEO_DIR}" \
-    --output_dir "${PREPARED_VIDEO_DIR}"
-echo "Step 1 complete."
+# Default values
+START_STEP=1
+END_STEP=4
 
-echo "--- Step 2: Extracting optical flow from prepared videos ---"
-python "${RAFT_PROJECT_DIR}/run_video_of_save.py" \
-    --model "${RAFT_MODEL_PATH}" \
-    --input_path "${PREPARED_VIDEO_DIR}" \
-    --output_path "${OUTPUT_OPTICAL_FLOW_DIR}" \
-    --interval 5
-    # Add other arguments for run_video_of_save.py as needed, e.g., --interval 2
-echo "Step 2 complete."
+# Parse arguments for start and end steps
+while getopts s:e: flag
+do
+    case "${flag}" in
+        s) START_STEP=${OPTARG};;
+        e) END_STEP=${OPTARG};;
+    esac
+done
 
-echo "--- Step 3: Trimming sequences from optical flow data ---"
-python "${RAFT_PROJECT_DIR}/trim_sequences.py" \
-    --input_dir "${OUTPUT_OPTICAL_FLOW_DIR}" \
-    --output_dir "${PROCESSED_SEQUENCES_DIR}" \
-    --sequence_length 10 \
-    --roi_width 128 \
-    --roi_height 128 # 여기에 원하는 하단 중앙 ROI의 너비와 높이를 지정
-echo "Step 3 complete."
+echo "--- Starting pipeline from Step ${START_STEP} to Step ${END_STEP} ---"
 
-echo "--- Step 4: Training the classifier ---"
-python "${RAFT_PROJECT_DIR}/train_classifier.py" \
-    --data_dir "${PROCESSED_SEQUENCES_DIR}" \
-    --num_classes 3 \
-    --sequence_length 10 \
-    --epochs 100 \
-    --batch_size 1 \
-    --model_save_path "${CLASSIFIER_MODEL_SAVE_PATH}"
-echo "Step 4 complete."
+# --- Step 1: Preparing video files for RAFT ---
+if (( START_STEP <= 1 && END_STEP >= 1 )); then
+    echo "--- Step 1: Preparing video files for RAFT ---"
+    python "${RAFT_PROJECT_DIR}/prepare_videos_for_raft.py" \
+        --input_dir "${INPUT_VIDEO_DIR}" \
+        --output_dir "${PREPARED_VIDEO_DIR}"
+    echo "Step 1 complete."
+fi
 
-echo "Full pipeline execution finished successfully!"
+# --- Step 2: Extracting optical flow from prepared videos ---
+if (( START_STEP <= 2 && END_STEP >= 2 )); then
+    echo "--- Step 2: Extracting optical flow from prepared videos ---"
+    python "${RAFT_PROJECT_DIR}/run_video_of_save.py" \
+        --model "${RAFT_MODEL_PATH}" \
+        --input_path "${PREPARED_VIDEO_DIR}" \
+        --output_path "${OUTPUT_OPTICAL_FLOW_DIR}" \
+        --interval 5
+        # Add other arguments for run_video_of_save.py as needed, e.g., --interval 2
+    echo "Step 2 complete."
+fi
+
+# --- Step 3: Trimming sequences from optical flow data ---
+if (( START_STEP <= 3 && END_STEP >= 3 )); then
+    echo "--- Step 3: Trimming sequences from optical flow data ---"
+    python "${RAFT_PROJECT_DIR}/trim_sequences.py" \
+        --input_dir "${OUTPUT_OPTICAL_FLOW_DIR}" \
+        --output_dir "${PROCESSED_SEQUENCES_DIR}" \
+        --sequence_length 10 \
+        --roi_width 128 \
+        --roi_height 128 # 여기에 원하는 하단 중앙 ROI의 너비와 높이를 지정
+    echo "Step 3 complete."
+fi
+
+# --- Step 4: Training the classifier ---
+if (( START_STEP <= 4 && END_STEP >= 4 )); then
+    echo "--- Step 4: Training the classifier ---"
+    python "${RAFT_PROJECT_DIR}/train_classifier.py" \
+        --data_dir "${PROCESSED_SEQUENCES_DIR}" \
+        --num_classes 3 \
+        --sequence_length 10 \
+        --epochs 100 \
+        --batch_size 1 \
+        --model_save_path "${CLASSIFIER_MODEL_SAVE_PATH}" \
+        --learning_rate 0.001 \
+        --weight_decay 1e-5 # weight_decay 추가
+    echo "Step 4 complete."
+fi
+
+echo "Full pipeline execution finished successfully for selected steps!"

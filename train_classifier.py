@@ -225,8 +225,8 @@ def train_classifier(args):
     else:
         num_classes_for_model = args.num_classes
 
-    train_ratio = 0.7
-    val_ratio = 0.2
+    train_ratio = 0.8
+    val_ratio = 0.1
     test_ratio = 0.1
 
     assert train_ratio + val_ratio + test_ratio == 1.0, "학습, 검증, 테스트 비율의 합은 1.0이어야 합니다."
