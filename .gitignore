@@ -15,3 +15,4 @@ test_code/output_whole/
 rmc_video/
 data/prepared_raft_videos/
 data/saved_optical_flow/
+wandb/
