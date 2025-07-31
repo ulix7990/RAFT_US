@@ -85,7 +85,7 @@ if (( START_STEP <= 4 && END_STEP >= 4 )); then
         --num_classes 3 \
         --sequence_length 10 \
         --epochs 100 \
-        --batch_size 1 \
+        --batch_size 4 \
         --model_save_path "${CLASSIFIER_MODEL_SAVE_PATH}" \
         --learning_rate 0.001 \
         --weight_decay 1e-5 # weight_decay 추가

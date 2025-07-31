@@ -186,9 +186,10 @@ def train_classifier(args):
         print("[INFO] 현재 메모리 상태 요약:\n", torch.cuda.memory_summary(device=None, abbreviated=True))
 
     input_dim = 2
-    hidden_dims = [16, 32]
+    # hidden_dims = [16, 32]
+    hidden_dims = [64]
     kernel_size = 3
-    n_layers = 2
+    n_layers = 1
 
     learning_rate = args.learning_rate
     num_epochs = args.epochs
