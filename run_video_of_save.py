@@ -25,46 +25,37 @@ def load_image(imfile_or_array):
     return img[None].to(DEVICE)
 
 def process_video(video_path, model, args):
-    """Processes a single video file to extract optical flow."""
-    # --- Custom directory logic ---
-    # 1. Parse class label from filename
+    """Processes a single video file to extract optical flow and save as a single compressed .npz file."""
+    # <<<--- 수정된 디렉토리 및 파일명 로직 시작 --->>>
     try:
-        base_name = os.path.splitext(os.path.basename(video_path))[0]
-        class_label = base_name.split('_')[-1]
+        video_basename = os.path.splitext(os.path.basename(video_path))[0]
+        class_label = video_basename.split('_')[-1]
         class_dir_name = f"class{class_label}"
     except IndexError:
         print(f"Error: Could not parse class label from filename: {video_path}")
         print("Filename must end with '_<number>' (e.g., 'my_video_1.mp4').")
         return
 
-    # 2. Create class directory
+    # 클래스 디렉토리 생성
     class_path = os.path.join(args.output_path, class_dir_name)
     os.makedirs(class_path, exist_ok=True)
 
-    # 3. Determine next sequence number
-    existing_seq_dirs = [d for d in os.listdir(class_path) if os.path.isdir(os.path.join(class_path, d)) and d.startswith('seq')]
-    if not existing_seq_dirs:
-        next_seq_num = 1
-    else:
-        last_seq_num = max([int(d.replace('seq', '')) for d in existing_seq_dirs])
-        next_seq_num = last_seq_num + 1
-    
-    # 4. Create sequence directory
-    seq_dir_name = f"seq{next_seq_num}"
-    final_output_path = os.path.join(class_path, seq_dir_name)
-    os.makedirs(final_output_path)
+    # 출력 파일 경로 설정 (비디오 파일명 기반)
+    output_npz_path = os.path.join(class_path, f"{video_basename}.npz")
     
     print(f"\nProcessing video: {video_path}")
     print(f"Detected class: {class_label}")
-    print(f"Saving to sequence directory: {final_output_path}")
-    # --- End of custom directory logic ---
+    print(f"Output will be saved to: {output_npz_path}")
+    # <<<--- 수정된 디렉토리 및 파일명 로직 종료 --->>>
 
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         print(f"Error: Could not open video file {video_path}")
         return
 
-    frame_idx = 0
+    # <<<--- 모든 Flow를 저장할 리스트 초기화 --->>>
+    all_flows = []
+
     ret, frame1_bgr = cap.read()
     if not ret:
         print(f"Error: Could not read first frame from {video_path}.")
@@ -75,17 +66,15 @@ def process_video(video_path, model, args):
         for _ in range(args.interval):
             ret, temp_frame = cap.read()
             if not ret:
-                break # End of video or error
-            frame2_bgr = temp_frame # Keep the last frame read as frame2
+                break
+            frame2_bgr = temp_frame
 
-        if frame2_bgr is None: # No more frames or error during interval read
+        if frame2_bgr is None:
             break
 
-        # Convert BGR to RGB for RAFT model
         frame1_rgb = cv2.cvtColor(frame1_bgr, cv2.COLOR_BGR2RGB)
         frame2_rgb = cv2.cvtColor(frame2_bgr, cv2.COLOR_BGR2RGB)
 
-        # Load images as torch tensors
         image1_torch = load_image(frame1_rgb)
         image2_torch = load_image(frame2_rgb)
 
@@ -95,23 +84,26 @@ def process_video(video_path, model, args):
         with torch.no_grad():
             _, flow_up = model(image1_padded, image2_padded, iters=20, test_mode=True)
             
-        # Unpad the flow to match the original image size
         flow_up_unpadded = padder.unpad(flow_up)
-
-        # Convert flow tensor to numpy array
         flo_numpy = flow_up_unpadded[0].permute(1, 2, 0).cpu().numpy()
         
-        # Save the optical flow data as .npy file
-        output_filename = f"flow_{frame_idx:04d}.npy"
-        output_path_full = os.path.join(final_output_path, output_filename)
-        np.save(output_path_full, flo_numpy)
+        # <<<--- Flow를 파일에 바로 저장하는 대신 리스트에 추가 --->>>
+        all_flows.append(flo_numpy)
 
-        # Move to the next frame pair
         frame1_bgr = frame2_bgr
-        frame_idx += 1
 
     cap.release()
-    print(f"Finished processing {video_path}. Total frames processed: {frame_idx}")
+
+    # <<<--- 비디오 처리 완료 후, 리스트에 쌓인 Flow를 하나의 파일로 압축 저장 --->>>
+    if all_flows:
+        # 리스트를 하나의 큰 NumPy 배열로 변환 (T, H, W, C)
+        flow_sequence = np.stack(all_flows, axis=0)
+        # 압축하여 .npz 파일로 저장
+        np.savez_compressed(output_npz_path, flow_sequence=flow_sequence)
+        print(f"Finished processing and saved {flow_sequence.shape[0]} flows to {output_npz_path}")
+    else:
+        print(f"Warning: No optical flow frames were generated for {video_path}.")
+
 
 def run(args):
     model = torch.nn.DataParallel(RAFT(args))
