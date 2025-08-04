@@ -8,7 +8,7 @@ set -e
 # Base directory of the RAFT_US project
 RAFT_PROJECT_DIR="."
 
-RAFT_DATA_DIR="/media/cvtech/백업자료/데이터셋/ps_data"
+RAFT_DATA_DIR="."
 
 # Directory containing your original video files (e.g., where your '03', '04', '07' folders are)
 INPUT_VIDEO_DIR="/media/cvtech/백업자료/데이터셋/rmc_video"
