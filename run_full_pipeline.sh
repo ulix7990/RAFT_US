@@ -8,18 +8,20 @@ set -e
 # Base directory of the RAFT_US project
 RAFT_PROJECT_DIR="."
 
+RAFT_DATA_DIR="/media/cvtech/백업자료/데이터셋/ps_data"
+
 # Directory containing your original video files (e.g., where your '03', '04', '07' folders are)
-INPUT_VIDEO_DIR="${RAFT_PROJECT_DIR}/rmc_video"
+INPUT_VIDEO_DIR="/media/cvtech/백업자료/데이터셋/rmc_video"
 
 # Directory where the prepared videos (renamed) will be stored
-PREPARED_VIDEO_DIR="${RAFT_PROJECT_DIR}/data/prepared_raft_videos"
+PREPARED_VIDEO_DIR="${RAFT_DATA_DIR}/data/prepared_raft_videos"
+
+# Directory for processed sequences (output of the new combined script)
+PROCESSED_SEQUENCES_DIR="${RAFT_DATA_DIR}/data/processed_sequences"
 
 # Path to your trained RAFT model checkpoint file
 # !!! IMPORTANT: REPLACE THIS WITH YOUR ACTUAL MODEL PATH !!!
 RAFT_MODEL_PATH="${RAFT_PROJECT_DIR}/models/raft-sintel.pth" # Example path, change this!
-
-# Directory for processed sequences (output of the new combined script)
-PROCESSED_SEQUENCES_DIR="${RAFT_PROJECT_DIR}/data/processed_sequences"
 
 # Path to save the trained classifier model
 CLASSIFIER_MODEL_SAVE_PATH="${RAFT_PROJECT_DIR}/convgru_classifier.pth"
