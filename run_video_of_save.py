@@ -104,6 +104,13 @@ def process_video(video_path, model, args):
     else:
         print(f"Warning: No optical flow frames were generated for {video_path}.")
 
+    # <<<--- 비디오 처리 후 삭제 --->>>
+    try:
+        os.remove(video_path)
+        print(f"Deleted original video file: {video_path}")
+    except Exception as e:
+        print(f"Warning: Failed to delete {video_path}. Reason: {e}")
+
 
 def run(args):
     model = torch.nn.DataParallel(RAFT(args))
