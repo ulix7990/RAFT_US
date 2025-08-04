@@ -66,7 +66,7 @@ def find_best_window(flow_sequence, window_size, roi_width, roi_height):
 def process_video_and_trim(video_path, model, args):
     """
     Processes a single video file to extract optical flow, finds the best sequence,
-    and saves the trimmed sequence as individual .npy files.
+    and saves that trimmed sequence as one .npz archive.
     """
     try:
         video_basename = os.path.splitext(os.path.basename(video_path))[0]
@@ -96,26 +96,20 @@ def process_video_and_trim(video_path, model, args):
             if not ret:
                 break
             frame2_bgr = temp_frame
-
         if frame2_bgr is None:
             break
 
+        # optical flow 계산 (이전과 동일)
         frame1_rgb = cv2.cvtColor(frame1_bgr, cv2.COLOR_BGR2RGB)
         frame2_rgb = cv2.cvtColor(frame2_bgr, cv2.COLOR_BGR2RGB)
-
         image1_torch = load_image(frame1_rgb)
         image2_torch = load_image(frame2_rgb)
-
         padder = InputPadder(image1_torch.shape)
         image1_padded, image2_padded = padder.pad(image1_torch, image2_torch)
-
         with torch.no_grad():
             _, flow_up = model(image1_padded, image2_padded, iters=20, test_mode=True)
-            
-        flow_up_unpadded = padder.unpad(flow_up)
-        flo_numpy = flow_up_unpadded[0].permute(1, 2, 0).cpu().numpy()
-        
-        all_flows.append(flo_numpy)
+        flow_up = padder.unpad(flow_up)[0].permute(1, 2, 0).cpu().numpy()
+        all_flows.append(flow_up)
         frame1_bgr = frame2_bgr
 
     cap.release()
@@ -124,39 +118,22 @@ def process_video_and_trim(video_path, model, args):
         print(f"Warning: No optical flow frames were generated for {video_path}.")
         return
 
-    # Now, trim the sequence
-    full_flow_sequence = np.stack(all_flows, axis=0)
-    start_idx, end_idx = find_best_window(full_flow_sequence, args.sequence_length, args.roi_width, args.roi_height)
-    best_window_sequence = full_flow_sequence[start_idx:end_idx]
+    # best window 선택
+    full_flow = np.stack(all_flows, axis=0)
+    start_idx, end_idx = find_best_window(full_flow, args.sequence_length, args.roi_width, args.roi_height)
+    best_window = full_flow[start_idx:end_idx]
 
-    # Save the trimmed sequence
+    # 출력 디렉토리 준비
     output_seq_dir = os.path.join(args.output_path, class_dir_name, f"seq_{video_basename}")
     os.makedirs(output_seq_dir, exist_ok=True)
 
-    use_roi_for_saving = args.roi_width is not None and args.roi_height is not None
+    # best_window_sequence만 .npz로 저장
+    np.savez_compressed(
+        os.path.join(output_seq_dir, f"{video_basename}.npz"),
+        flow_sequence=best_window
+    )
 
-    for i, frame_data in enumerate(best_window_sequence):
-        new_filename = f"flow_{i:04d}.npy"
-        output_file_path = os.path.join(output_seq_dir, new_filename)
-
-        if use_roi_for_saving:
-            h, w, _ = frame_data.shape
-            start_h = max(0, h - args.roi_height)
-            end_h = h
-            start_w = max(0, (w - args.roi_width) // 2)
-            end_w = min(w, start_w + args.roi_width)
-
-            if (end_h - start_h <= 0) or (end_w - start_w <= 0):
-                cropped_flow_data = frame_data
-            else:
-                cropped_flow_data = frame_data[start_h:end_h, start_w:end_w, :]
-            
-            np.save(output_file_path, cropped_flow_data)
-        else:
-            np.save(output_file_path, frame_data)
-            
-    print(f"Finished processing. Saved {len(best_window_sequence)} frames to {output_seq_dir}")
-
+    print(f"Finished processing. Saved {best_window.shape[0]} frames as .npz in {output_seq_dir}")
 
 def run(args):
     model = torch.nn.DataParallel(RAFT(args))
