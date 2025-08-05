@@ -12,6 +12,7 @@ import glob
 
 from raft import RAFT
 from utils.utils import InputPadder
+from tqdm import tqdm 
 
 DEVICE = 'cuda'
 
@@ -53,13 +54,18 @@ def process_video(video_path, model, args):
         print(f"Error: Could not open video file {video_path}")
         return
 
-    # <<<--- 모든 Flow를 저장할 리스트 초기화 --->>>
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    expected_flows = max((total_frames - 1) // args.interval, 0)
+
     all_flows = []
 
     ret, frame1_bgr = cap.read()
     if not ret:
         print(f"Error: Could not read first frame from {video_path}.")
         return
+
+    # tqdm progress bar 시작
+    pbar = tqdm(total=expected_flows, desc="Extracting Optical Flow", unit="flow")
 
     while True:
         frame2_bgr = None
@@ -83,15 +89,15 @@ def process_video(video_path, model, args):
 
         with torch.no_grad():
             _, flow_up = model(image1_padded, image2_padded, iters=20, test_mode=True)
-            
         flow_up_unpadded = padder.unpad(flow_up)
         flo_numpy = flow_up_unpadded[0].permute(1, 2, 0).cpu().numpy()
-        
-        # <<<--- Flow를 파일에 바로 저장하는 대신 리스트에 추가 --->>>
+
         all_flows.append(flo_numpy)
+        pbar.update(1)  # progress bar 갱신
 
         frame1_bgr = frame2_bgr
 
+    pbar.close()  # 끝난 후 닫기
     cap.release()
 
     # <<<--- 비디오 처리 완료 후, 리스트에 쌓인 Flow를 하나의 파일로 압축 저장 --->>>
