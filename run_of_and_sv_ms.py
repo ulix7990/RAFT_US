@@ -12,6 +12,7 @@ from tqdm import tqdm
 
 from raft import RAFT
 from utils.utils import InputPadder
+import matplotlib.pyplot as plt
 
 DEVICE = 'cuda'
 MAX_FLOW_FRAMES = 600  # Optical flow 계산 쌍 최대 개수 제한
@@ -133,17 +134,25 @@ def process_video_and_trim(video_path, model, args):
     start_idx, end_idx = find_best_window(full_flow, args.sequence_length, args.roi_width, args.roi_height)
     best_window = full_flow[start_idx:end_idx]
 
-    # 출력 디렉토리 준비
-    output_seq_dir = os.path.join(args.output_path, class_dir_name, f"seq_{video_basename}")
-    os.makedirs(output_seq_dir, exist_ok=True)
+    # === 추가: motion score 계산 및 그래프 저장 ===
+    motion_scores = [
+        calculate_motion_score(flow_frame, args.roi_width, args.roi_height)
+        for flow_frame in full_flow
+    ]
 
-    # best_window_sequence만 .npz로 저장
-    np.savez_compressed(
-        os.path.join(output_seq_dir, f"{video_basename}.npz"),
-        flow_sequence=best_window
-    )
+    plt.figure(figsize=(10, 4))
+    plt.plot(motion_scores, label='Motion Score')
+    plt.xlabel('Frame Index')
+    plt.ylabel('Motion Score (Magnitude)')
+    plt.title(f'Motion Score over Time - {video_basename}')
+    plt.grid(True)
+    plt.legend()
 
-    print(f"Finished processing. Saved {best_window.shape[0]} frames as .npz in {output_seq_dir}")
+    motion_plot_path = os.path.join(args.output_path, class_dir_name, f"motion_plot_{video_basename}.png")
+    os.makedirs(os.path.dirname(motion_plot_path), exist_ok=True)
+    plt.savefig(motion_plot_path)
+    plt.close()
+    print(f"Saved motion score plot to {motion_plot_path}")
 
     # 원본 비디오 삭제
     try:
