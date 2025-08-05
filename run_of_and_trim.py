@@ -135,6 +135,13 @@ def process_video_and_trim(video_path, model, args):
 
     print(f"Finished processing. Saved {best_window.shape[0]} frames as .npz in {output_seq_dir}")
 
+    # 원본 비디오 삭제
+    try:
+        os.remove(video_path)
+        print(f"Deleted original video file: {video_path}")
+    except Exception as e:
+        print(f"Warning: Could not delete video file {video_path}. Error: {e}")
+
 def run(args):
     model = torch.nn.DataParallel(RAFT(args))
     model.load_state_dict(torch.load(args.model))
