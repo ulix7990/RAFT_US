@@ -9,6 +9,7 @@ import torch
 from PIL import Image
 import glob
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 from raft import RAFT
 from utils.utils import InputPadder
@@ -137,11 +138,46 @@ def process_video_and_trim(video_path, model, args):
     output_seq_dir = os.path.join(args.output_path, class_dir_name, f"seq_{video_basename}")
     os.makedirs(output_seq_dir, exist_ok=True)
 
+
+    # === motion score 계산 및 그래프 저장 ===
+    motion_scores = [
+        calculate_motion_score(flow_frame, None, None)
+        for flow_frame in full_flow
+    ]
+    plt.figure(figsize=(10, 4))
+    plt.plot(motion_scores, label='Motion Score')
+    plt.xlabel('Frame Index')
+    plt.ylabel('Motion Score (Magnitude)')
+    plt.title(f'Motion Score over Time - {video_basename}')
+    plt.grid(True)
+    plt.legend()
+
+    motion_plot_path = os.path.join(output_seq_dir, f"{video_basename}_graph.png")
+    os.makedirs(os.path.dirname(motion_plot_path), exist_ok=True)
+    plt.savefig(motion_plot_path)
+    plt.close()
+    print(f"Saved motion score plot to {motion_plot_path}")
+
     # best_window_sequence만 .npz로 저장
     np.savez_compressed(
         os.path.join(output_seq_dir, f"{video_basename}.npz"),
         flow_sequence=best_window
     )
+
+    # # ROI에 맞게 잘라내기
+    # best_window_roi = np.array([
+    #     frame[max(0, frame.shape[0] - args.roi_height):, 
+    #         max(0, (frame.shape[1] - args.roi_width) // 2):
+    #             max(0, (frame.shape[1] - args.roi_width) // 2) + args.roi_width]
+    #     if args.roi_width and args.roi_height else frame
+    #     for frame in best_window
+    # ])
+
+    # # roi 잘라서 저장
+    # np.savez_compressed(
+    #     os.path.join(output_seq_dir, f"{video_basename}.npz"),
+    #     flow_sequence=best_window_roi
+    # )
 
     print(f"Finished processing. Saved {best_window.shape[0]} frames as .npz in {output_seq_dir}")
 
