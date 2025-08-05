@@ -14,6 +14,7 @@ from raft import RAFT
 from utils.utils import InputPadder
 
 DEVICE = 'cuda'
+MAX_FLOW_FRAMES = 600  # Optical flow 계산 쌍 최대 개수 제한
 
 def load_image(imfile_or_array):
     if isinstance(imfile_or_array, str):
@@ -84,7 +85,7 @@ def process_video_and_trim(video_path, model, args):
         return
 
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    estimated_pairs = max(0, (total_frames - 1) // args.interval)
+    estimated_pairs = min(MAX_FLOW_FRAMES, max(0, (total_frames - 1) // args.interval))
 
     all_flows = []
     ret, frame1_bgr = cap.read()
@@ -94,7 +95,8 @@ def process_video_and_trim(video_path, model, args):
 
     pbar = tqdm(total=estimated_pairs, desc=f"Processing {os.path.basename(video_path)}", leave=False)
 
-    while True:
+    flow_count = 0
+    while flow_count < MAX_FLOW_FRAMES:
         frame2_bgr = None
         for _ in range(args.interval):
             ret, temp_frame = cap.read()
@@ -116,6 +118,7 @@ def process_video_and_trim(video_path, model, args):
         flow_up = padder.unpad(flow_up)[0].permute(1, 2, 0).cpu().numpy()
         all_flows.append(flow_up)
         frame1_bgr = frame2_bgr
+        flow_count += 1
         pbar.update(1)
 
     pbar.close()
