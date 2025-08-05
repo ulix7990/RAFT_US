@@ -83,11 +83,16 @@ def process_video_and_trim(video_path, model, args):
         print(f"Error: Could not open video file {video_path}")
         return
 
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    estimated_pairs = max(0, (total_frames - 1) // args.interval)
+
     all_flows = []
     ret, frame1_bgr = cap.read()
     if not ret:
         print(f"Error: Could not read first frame from {video_path}.")
         return
+
+    pbar = tqdm(total=estimated_pairs, desc=f"Processing {os.path.basename(video_path)}", leave=False)
 
     while True:
         frame2_bgr = None
@@ -99,7 +104,7 @@ def process_video_and_trim(video_path, model, args):
         if frame2_bgr is None:
             break
 
-        # optical flow 계산 (이전과 동일)
+        # Optical flow 계산
         frame1_rgb = cv2.cvtColor(frame1_bgr, cv2.COLOR_BGR2RGB)
         frame2_rgb = cv2.cvtColor(frame2_bgr, cv2.COLOR_BGR2RGB)
         image1_torch = load_image(frame1_rgb)
@@ -111,7 +116,9 @@ def process_video_and_trim(video_path, model, args):
         flow_up = padder.unpad(flow_up)[0].permute(1, 2, 0).cpu().numpy()
         all_flows.append(flow_up)
         frame1_bgr = frame2_bgr
+        pbar.update(1)
 
+    pbar.close()
     cap.release()
 
     if not all_flows:
