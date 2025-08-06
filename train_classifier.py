@@ -9,6 +9,7 @@ import argparse
 import gc
 import wandb
 import cv2
+from tqdm import tqdm
 
 from core.convgru_classifier import ConvGRUClassifier
 
@@ -273,7 +274,7 @@ def train_classifier(args):
         train_correct_predictions = 0
         train_total_predictions = 0
 
-        for i, (inputs, labels) in enumerate(train_dataloader):
+        for i, (inputs, labels) in enumerate(tqdm(train_dataloader, desc=f"Epoch {epoch+1}/{num_epochs}")):
             inputs, labels = inputs.to(device).float(), labels.to(device)
 
             optimizer.zero_grad()
