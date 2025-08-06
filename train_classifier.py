@@ -10,10 +10,9 @@ import gc
 import wandb
 import cv2
 from tqdm import tqdm
+from sklearn.metrics import f1_score
 
 from core.convgru_classifier import ConvGRUClassifier
-
-import cv2  # 추가
 
 class OpticalFlowDataset(Dataset):
     def __init__(self, data_dir, sequence_length=10, resize_to=None):
@@ -109,6 +108,9 @@ def validate(model, dataloader, criterion, device):
     correct_predictions = 0
     total_predictions = 0
 
+    all_preds = []
+    all_labels = []
+
     with torch.no_grad():
         for inputs, labels in dataloader:
             inputs, labels = inputs.to(device).float(), labels.to(device)
@@ -120,19 +122,28 @@ def validate(model, dataloader, criterion, device):
             total_predictions += labels.size(0)
             correct_predictions += (predicted == labels).sum().item()
 
+            all_preds.extend(predicted.cpu().numpy())
+            all_labels.extend(labels.cpu().numpy())
+
             del inputs, labels, outputs, predicted, loss
             torch.cuda.empty_cache()
             gc.collect()
 
     avg_val_loss = val_loss / len(dataloader)
     accuracy = 100 * correct_predictions / total_predictions
-    return avg_val_loss, accuracy
+
+    f1 = f1_score(all_labels, all_preds, average='weighted') * 100  # 가중 평균 F1 score
+
+    return avg_val_loss, accuracy, f1
 
 def test_classifier(model, dataloader, criterion, device):
     model.eval()
     test_loss = 0.0
     correct_predictions = 0
     total_predictions = 0
+
+    all_preds = []
+    all_labels = []
 
     with torch.no_grad():
         for inputs, labels in dataloader:
@@ -145,13 +156,19 @@ def test_classifier(model, dataloader, criterion, device):
             total_predictions += labels.size(0)
             correct_predictions += (predicted == labels).sum().item()
 
+            all_preds.extend(predicted.cpu().numpy())
+            all_labels.extend(labels.cpu().numpy())
+
             del inputs, labels, outputs, predicted, loss
             torch.cuda.empty_cache()
             gc.collect()
 
     avg_test_loss = test_loss / len(dataloader)
     accuracy = 100 * correct_predictions / total_predictions
-    return avg_test_loss, accuracy
+
+    f1 = f1_score(all_labels, all_preds, average='weighted') * 100  # 가중 평균 F1 score
+
+    return avg_test_loss, accuracy, f1
 
 
 def train_classifier(args):
@@ -303,11 +320,9 @@ def train_classifier(args):
         # WandB에 에포크 결과 로깅 (마지막 전역 스텝 사용)
         wandb.log({"epoch/train_loss": epoch_train_loss, "epoch/train_accuracy": epoch_train_accuracy}, step=global_step - 1)
 
-
-        val_loss, val_accuracy = validate(model, val_dataloader, criterion, device)
-        print(f"Epoch {epoch+1}/{num_epochs} - Val Loss: {val_loss:.4f}, Val Acc: {val_accuracy:.2f}%")
-        # WandB에 에포크 결과 로깅 (마지막 전역 스텝 사용)
-        wandb.log({"epoch/val_loss": val_loss, "epoch/val_accuracy": val_accuracy}, step=global_step - 1)
+        val_loss, val_accuracy, val_f1 = validate(model, val_dataloader, criterion, device)
+        print(f"Epoch {epoch+1}/{num_epochs} - Val Loss: {val_loss:.4f}, Val Acc: {val_accuracy:.2f}%, Val F1: {val_f1:.2f}%")
+        wandb.log({"epoch/val_loss": val_loss, "epoch/val_accuracy": val_accuracy, "epoch/val_f1": val_f1}, step=global_step - 1)
 
         if val_accuracy > best_val_accuracy:
             best_val_accuracy = val_accuracy
@@ -319,12 +334,11 @@ def train_classifier(args):
 
     print("Starting final testing...")
     # model.load_state_dict(torch.load(args.model_save_path)) # Best 모델로 테스트하려면 이 줄의 주석을 해제
-    test_loss, test_accuracy = test_classifier(model, test_dataloader, criterion, device)
-    print(f"Final Test Loss: {test_loss:.4f}, Final Test Acc: {test_accuracy:.2f}%")
-    wandb.log({"final_test_loss": test_loss, "final_test_accuracy": test_accuracy})
+    test_loss, test_accuracy, test_f1 = test_classifier(model, test_dataloader, criterion, device)
+    print(f"Final Test Loss: {test_loss:.4f}, Final Test Acc: {test_accuracy:.2f}%, Final Test F1: {test_f1:.2f}%")
+    wandb.log({"final_test_loss": test_loss, "final_test_accuracy": test_accuracy, "final_test_f1": test_f1})
 
     wandb.finish()
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Train a ConvGRU classifier for optical flow sequences.")
