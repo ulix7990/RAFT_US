@@ -20,105 +20,72 @@ class OpticalFlowDataset(Dataset):
         print(f"[DEBUG] Dataset initialized with data_dir: {self.data_dir}")
 
         class_dirs = sorted(glob.glob(os.path.join(self.data_dir, 'class*')))
-
         print(f"[DEBUG] Found class directories: {class_dirs}")
         if not class_dirs:
-            print(f"⚠️ Warning: No 'class*' directories found in {self.data_dir}. Check your --data_dir path and directory naming.")
+            print(f"⚠️ Warning: No 'class*' directories found in {self.data_dir}.")
             self.label_mapping = {}
             self.num_actual_classes = 0
             return
 
+        # label mapping
         self.label_mapping = {}
         unique_raw_labels = set()
-
-        for class_dir in class_dirs:
-            try:
-                class_label_str = class_dir.split('class')[-1]
-                raw_class_label = int(class_label_str)
-                unique_raw_labels.add(raw_class_label)
-            except ValueError:
-                print(f"⚠️ Warning: Could not parse valid class label number from '{class_dir}'. Skipping this directory.")
-                continue
-
-        sorted_raw_labels = sorted(list(unique_raw_labels))
-        for i, raw_label in enumerate(sorted_raw_labels):
-            self.label_mapping[raw_label] = i
-
-        print(f"[INFO] Original class label mapping: {self.label_mapping}")
-        self.num_actual_classes = len(self.label_mapping)
-        print(f"[INFO] Actual number of unique classes in dataset: {self.num_actual_classes}")
-
-        sample_count_in_init = 0
         for class_dir in class_dirs:
             try:
                 raw_class_label = int(class_dir.split('class')[-1])
-                mapped_class_label = self.label_mapping[raw_class_label]
-            except (ValueError, KeyError):
+                unique_raw_labels.add(raw_class_label)
+            except ValueError:
                 continue
 
-            seq_dirs = sorted(glob.glob(os.path.join(class_dir, 'seq*')))
-            if not seq_dirs:
-                print(f"⚠️ Warning: No 'seq*' directories found in {class_dir}. Skipping this class directory.")
+        for i, raw_label in enumerate(sorted(unique_raw_labels)):
+            self.label_mapping[raw_label] = i
+
+        self.num_actual_classes = len(self.label_mapping)
+
+        # load npz paths
+        for class_dir in class_dirs:
+            try:
+                raw_class_label = int(class_dir.split('class')[-1])
+                mapped_label = self.label_mapping[raw_class_label]
+            except:
                 continue
 
-            for seq_dir in seq_dirs:
-                flow_files = sorted(glob.glob(os.path.join(seq_dir, 'flow_*.npy')))
-                if not flow_files:
-                    print(f"⚠️ Warning: No 'flow_*.npy' files found in {seq_dir}. Skipping this sequence.")
-                    continue
+            npz_files = sorted(glob.glob(os.path.join(class_dir, "seq*", "*.npz")))
+            for npz_path in npz_files:
+                self.samples.append((npz_path, mapped_label))
 
-                self.samples.append((seq_dir, mapped_class_label))
-                sample_count_in_init += 1
-
-        print(f"[DEBUG] Total samples populated in __init__: {sample_count_in_init}")
-        if not self.samples:
-             print("❗❗❗ Critical Error: self.samples is empty after dataset initialization. No data will be loaded.")
+        print(f"[DEBUG] Total loaded .npz samples: {len(self.samples)}")
 
     def __len__(self):
         return len(self.samples)
 
     def __getitem__(self, idx):
-        seq_dir, class_label = self.samples[idx]
+        npz_path, label = self.samples[idx]
 
-        flow_files = sorted(glob.glob(os.path.join(seq_dir, 'flow_*.npy')))
+        try:
+            data = np.load(npz_path)
+            flow_sequence = data['flow_sequence']  # shape: (T, H, W, 2)
+            data.close()
+        except Exception as e:
+            print(f"⚠️ Failed to load {npz_path}: {e}")
+            # return dummy zero tensor
+            dummy = torch.zeros((self.sequence_length, 2, 64, 64), dtype=torch.float32)
+            return dummy, torch.tensor(0, dtype=torch.long)
 
-        flow_arrays = []
-        for f in flow_files:
-            try:
-                flow_arrays.append(np.load(f))
-            except Exception as e:
-                print(f"⚠️ Warning: Failed to load file {f}. Error: {e}. Skipping this file.")
-                continue
+        # Convert to torch tensor
+        flow_tensor = torch.from_numpy(flow_sequence).permute(0, 3, 1, 2).float()  # (T, 2, H, W)
 
-        if not flow_arrays:
-            print(f"⚠️ Warning: No valid flow files loaded for sequence {seq_dir}. Returning dummy data.")
-            _dummy_C, _dummy_H, _dummy_W = 2, 64, 64
-            if hasattr(self, '_cached_h_w'):
-                _dummy_H, _dummy_W = self._cached_h_w
+        # Pad or trim
+        T = flow_tensor.shape[0]
+        if T > self.sequence_length:
+            flow_tensor = flow_tensor[:self.sequence_length]
+        elif T < self.sequence_length:
+            pad_len = self.sequence_length - T
+            _, C, H, W = flow_tensor.shape
+            pad_tensor = torch.zeros((pad_len, C, H, W), dtype=torch.float32)
+            flow_tensor = torch.cat([flow_tensor, pad_tensor], dim=0)
 
-            dummy_flow_sequence = torch.zeros((self.sequence_length, _dummy_C, _dummy_H, _dummy_W), dtype=torch.float32)
-            dummy_label = torch.tensor(0, dtype=torch.long)
-            if self.label_mapping:
-                dummy_label = torch.tensor(min(self.label_mapping.values()), dtype=torch.long)
-            return dummy_flow_sequence, dummy_label
-
-        flow_sequence = torch.from_numpy(np.array(flow_arrays)).permute(0, 3, 1, 2)
-
-        if not hasattr(self, '_cached_h_w'):
-            self._cached_h_w = (flow_sequence.shape[2], flow_sequence.shape[3])
-
-        current_len = flow_sequence.shape[0]
-        if current_len > self.sequence_length:
-            flow_sequence = flow_sequence[:self.sequence_length]
-        elif current_len < self.sequence_length:
-            padding_len = self.sequence_length - current_len
-            _, C, H, W = flow_sequence.shape
-            padding = torch.zeros((padding_len, C, H, W), dtype=flow_sequence.dtype)
-            flow_sequence = torch.cat([flow_sequence, padding], dim=0)
-
-        label = torch.tensor(class_label, dtype=torch.long)
-
-        return flow_sequence, label
+        return flow_tensor, torch.tensor(label, dtype=torch.long)
 
 def validate(model, dataloader, criterion, device):
     model.eval()
