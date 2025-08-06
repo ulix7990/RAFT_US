@@ -8,13 +8,17 @@ import glob
 import argparse
 import gc
 import wandb
+import cv2
 
 from core.convgru_classifier import ConvGRUClassifier
 
+import cv2  # 추가
+
 class OpticalFlowDataset(Dataset):
-    def __init__(self, data_dir, sequence_length=10):
+    def __init__(self, data_dir, sequence_length=10, resize_to=None):
         self.sequence_length = sequence_length
         self.samples = []
+        self.resize_to = resize_to  # (H, W) 튜플, None이면 리사이즈 안함
 
         self.data_dir = os.path.abspath(data_dir)
         print(f"[DEBUG] Dataset initialized with data_dir: {self.data_dir}")
@@ -68,11 +72,22 @@ class OpticalFlowDataset(Dataset):
             data.close()
         except Exception as e:
             print(f"⚠️ Failed to load {npz_path}: {e}")
-            # return dummy zero tensor
             dummy = torch.zeros((self.sequence_length, 2, 64, 64), dtype=torch.float32)
             return dummy, torch.tensor(0, dtype=torch.long)
 
-        # Convert to torch tensor
+        if self.resize_to is not None:
+            resized_flows = []
+            H_new, W_new = self.resize_to
+            for t in range(flow_sequence.shape[0]):
+                frame = flow_sequence[t]  # (H_old, W_old, 2)
+                channels = []
+                for c in range(frame.shape[2]):
+                    resized_c = cv2.resize(frame[:, :, c], (W_new, H_new), interpolation=cv2.INTER_LINEAR)
+                    channels.append(resized_c)
+                resized_frame = np.stack(channels, axis=2)  # (H_new, W_new, 2)
+                resized_flows.append(resized_frame)
+            flow_sequence = np.array(resized_flows)  # (T, H_new, W_new, 2)
+
         flow_tensor = torch.from_numpy(flow_sequence).permute(0, 3, 1, 2).float()  # (T, 2, H, W)
 
         # Pad or trim
@@ -163,7 +178,13 @@ def train_classifier(args):
     batch_size = args.batch_size
     weight_decay = args.weight_decay # weight_decay 인자 추가
 
-    full_dataset = OpticalFlowDataset(data_dir=args.data_dir, sequence_length=args.sequence_length)
+    resize_tuple = (args.resize_h, args.resize_w) if args.resize_h and args.resize_w else None
+
+    full_dataset = OpticalFlowDataset(
+        data_dir=args.data_dir,
+        sequence_length=args.sequence_length,
+        resize_to=resize_tuple
+    )
 
     print(f"불러온 전체 데이터 샘플 수: {len(full_dataset)}")
     if len(full_dataset) == 0:
@@ -314,6 +335,8 @@ if __name__ == '__main__':
     parser.add_argument('--learning_rate', type=float, default=0.001, help='Learning rate for optimizer')
     parser.add_argument('--weight_decay', type=float, default=1e-5, help='Weight decay (L2 regularization) for optimizer') # weight_decay 인자 추가
     parser.add_argument('--model_save_path', type=str, default='./convgru_classifier.pth', help='Path to save the trained model')
+    parser.add_argument('--resize_h', type=int, default=None, help='Resize height (H) for input frames')
+    parser.add_argument('--resize_w', type=int, default=None, help='Resize width (W) for input frames')
 
     args = parser.parse_args()
     train_classifier(args)

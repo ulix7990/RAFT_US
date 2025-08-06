@@ -78,7 +78,9 @@ if (( START_STEP <= 3 && END_STEP >= 3 )); then
         --batch_size 4 \
         --model_save_path "${CLASSIFIER_MODEL_SAVE_PATH}" \
         --learning_rate 0.001 \
-        --weight_decay 1e-5 # weight_decay 추가
+        --weight_decay 1e-5 \ # weight_decay 추가
+        --resize_h 256 \ 
+        --resize_w 448
     echo "Step 4 complete."
 fi
 
