@@ -11,6 +11,8 @@ import wandb
 import cv2
 from tqdm import tqdm
 from sklearn.metrics import f1_score
+from collections import Counter
+from torch.utils.data import WeightedRandomSampler
 
 from core.convgru_classifier import ConvGRUClassifier
 
@@ -249,7 +251,23 @@ def train_classifier(args):
 
     print(f"[INFO] 데이터셋 분할: 학습 {len(train_dataset)}개, 검증 {len(val_dataset)}개, 테스트 {len(test_dataset)}개")
 
-    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    # train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    # 클래스별 샘플 수 계산
+    label_counts = Counter(label for _, label in full_dataset.samples)
+
+    # 전체 샘플 가중치 계산
+    sample_weights = [1.0 / label_counts[label] for _, label in full_dataset.samples]
+
+    # train_dataset에서 사용할 샘플 가중치만 추출
+    train_indices = train_dataset.indices
+    train_weights = [sample_weights[i] for i in train_indices]
+
+    # 샘플러 생성
+    sampler = WeightedRandomSampler(train_weights, num_samples=len(train_indices), replacement=True)
+
+    # DataLoader 정의
+    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, sampler=sampler)
+
     val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
     test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
