@@ -134,7 +134,7 @@ def validate(model, dataloader, criterion, device):
     avg_val_loss = val_loss / len(dataloader)
     accuracy = 100 * correct_predictions / total_predictions
 
-    f1 = f1_score(all_labels, all_preds, average='weighted') * 100  # 가중 평균 F1 score
+    f1 = f1_score(all_labels, all_preds, average='macro') * 100  # 가중 평균 F1 score
 
     return avg_val_loss, accuracy, f1
 
@@ -168,7 +168,7 @@ def test_classifier(model, dataloader, criterion, device):
     avg_test_loss = test_loss / len(dataloader)
     accuracy = 100 * correct_predictions / total_predictions
 
-    f1 = f1_score(all_labels, all_preds, average='weighted') * 100  # 가중 평균 F1 score
+    f1 = f1_score(all_labels, all_preds, average='macro') * 100  # 가중 평균 F1 score
 
     return avg_test_loss, accuracy, f1
 
@@ -189,7 +189,7 @@ def train_classifier(args):
 
     input_dim = 2
     # hidden_dims = [16, 32]
-    hidden_dims = [64]
+    hidden_dims = [32]
     kernel_size = 3
     n_layers = 1
 
