@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import Dataset, DataLoader, random_split
+from torch.utils.data import Dataset, DataLoader, Subset
 import numpy as np
 import os
 import glob
@@ -11,6 +11,7 @@ import wandb
 import cv2
 from tqdm import tqdm
 from sklearn.metrics import f1_score
+from sklearn.model_selection import train_test_split
 from collections import Counter
 from torch.utils.data import WeightedRandomSampler
 
@@ -240,16 +241,43 @@ def train_classifier(args):
 
     assert train_ratio + val_ratio + test_ratio == 1.0, "학습, 검증, 테스트 비율의 합은 1.0이어야 합니다."
 
-    total_size = len(full_dataset)
-    train_size = int(train_ratio * total_size)
-    val_size = int(val_ratio * total_size)
-    test_size = total_size - train_size - val_size
+    indices = np.arange(len(full_dataset))
+    labels = [sample[1] for sample in full_dataset.samples]
 
-    train_dataset, val_dataset, test_dataset = random_split(
-        full_dataset, [train_size, val_size, test_size], generator=torch.Generator().manual_seed(42)
+    # Stratified split into train and temp (val + test)
+    train_indices, temp_indices, _, temp_labels = train_test_split(
+        indices, labels,
+        test_size=(val_ratio + test_ratio),
+        random_state=42,
+        stratify=labels
     )
 
+    # Stratified split of temp into val and test
+    val_indices, test_indices, _, _ = train_test_split(
+        temp_indices, temp_labels,
+        test_size=(test_ratio / (val_ratio + test_ratio)),
+        random_state=42,
+        stratify=temp_labels
+    )
+
+    train_dataset = Subset(full_dataset, train_indices)
+    val_dataset = Subset(full_dataset, val_indices)
+    test_dataset = Subset(full_dataset, test_indices)
+
     print(f"[INFO] 데이터셋 분할: 학습 {len(train_dataset)}개, 검증 {len(val_dataset)}개, 테스트 {len(test_dataset)}개")
+
+    # 각 데이터셋의 클래스 비율 확인
+    train_labels = [full_dataset.samples[i][1] for i in train_dataset.indices]
+    val_labels = [full_dataset.samples[i][1] for i in val_dataset.indices]
+    test_labels = [full_dataset.samples[i][1] for i in test_dataset.indices]
+
+    train_distribution = Counter(train_labels)
+    val_distribution = Counter(val_labels)
+    test_distribution = Counter(test_labels)
+
+    print(f"[INFO] Train dataset class distribution: {sorted(train_distribution.items())}")
+    print(f"[INFO] Validation dataset class distribution: {sorted(val_distribution.items())}")
+    print(f"[INFO] Test dataset class distribution: {sorted(test_distribution.items())}")
 
     # train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     # 클래스별 샘플 수 계산
