@@ -14,27 +14,29 @@ from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
 from collections import Counter
 from torch.utils.data import WeightedRandomSampler
+import random
 
 from core.convgru_classifier import ConvGRUClassifier
 
 class OpticalFlowDataset(Dataset):
-    def __init__(self, data_dir, sequence_length=10, resize_to=None):
+    def __init__(self, data_dir, sequence_length=10, resize_to=None, preprocessing_mode='resize', crop_location='center'):
         self.sequence_length = sequence_length
         self.samples = []
-        self.resize_to = resize_to  # (H, W) 튜플, None이면 리사이즈 안함
+        self.resize_to = resize_to
+        self.preprocessing_mode = preprocessing_mode
+        self.crop_location = crop_location
+        self.crop_positions = ['top-left', 'top-center', 'top-right', 'middle-left', 'center', 'middle-right', 'bottom-left', 'bottom-center', 'bottom-right']
 
         self.data_dir = os.path.abspath(data_dir)
         print(f"[DEBUG] Dataset initialized with data_dir: {self.data_dir}")
 
         class_dirs = sorted(glob.glob(os.path.join(self.data_dir, 'class*')))
-        print(f"[DEBUG] Found class directories: {class_dirs}")
         if not class_dirs:
             print(f"⚠️ Warning: No 'class*' directories found in {self.data_dir}.")
             self.label_mapping = {}
             self.num_actual_classes = 0
             return
 
-        # label mapping
         self.label_mapping = {}
         unique_raw_labels = set()
         for class_dir in class_dirs:
@@ -49,7 +51,6 @@ class OpticalFlowDataset(Dataset):
 
         self.num_actual_classes = len(self.label_mapping)
 
-        # load npz paths
         for class_dir in class_dirs:
             try:
                 raw_class_label = int(class_dir.split('class')[-1])
@@ -66,12 +67,32 @@ class OpticalFlowDataset(Dataset):
     def __len__(self):
         return len(self.samples)
 
+    def _get_crop_coordinates(self, H_old, W_old, H_new, W_new, location):
+        if location == 'random':
+            location = random.choice(self.crop_positions)
+
+        if 'top' in location:
+            top = 0
+        elif 'middle' in location or 'center' in location:
+            top = (H_old - H_new) // 2
+        elif 'bottom' in location:
+            top = H_old - H_new
+        
+        if 'left' in location:
+            left = 0
+        elif 'center' in location:
+            left = (W_old - W_new) // 2
+        elif 'right' in location:
+            left = W_old - W_new
+            
+        return top, left
+
     def __getitem__(self, idx):
         npz_path, label = self.samples[idx]
 
         try:
             data = np.load(npz_path)
-            flow_sequence = data['flow_sequence']  # shape: (T, H, W, 2)
+            flow_sequence = data['flow_sequence']
             data.close()
         except Exception as e:
             print(f"⚠️ Failed to load {npz_path}: {e}")
@@ -79,21 +100,35 @@ class OpticalFlowDataset(Dataset):
             return dummy, torch.tensor(0, dtype=torch.long)
 
         if self.resize_to is not None:
-            resized_flows = []
+            processed_flows = []
             H_new, W_new = self.resize_to
-            for t in range(flow_sequence.shape[0]):
-                frame = flow_sequence[t]  # (H_old, W_old, 2)
-                channels = []
-                for c in range(frame.shape[2]):
-                    resized_c = cv2.resize(frame[:, :, c], (W_new, H_new), interpolation=cv2.INTER_LINEAR)
-                    channels.append(resized_c)
-                resized_frame = np.stack(channels, axis=2)  # (H_new, W_new, 2)
-                resized_flows.append(resized_frame)
-            flow_sequence = np.array(resized_flows)  # (T, H_new, W_new, 2)
+            T, H_old, W_old, _ = flow_sequence.shape
 
-        flow_tensor = torch.from_numpy(flow_sequence).permute(0, 3, 1, 2).float()  # (T, 2, H, W)
+            if self.preprocessing_mode == 'resize':
+                for t in range(T):
+                    frame = flow_sequence[t]
+                    channels = []
+                    for c in range(frame.shape[2]):
+                        resized_c = cv2.resize(frame[:, :, c], (W_new, H_new), interpolation=cv2.INTER_LINEAR)
+                        channels.append(resized_c)
+                    resized_frame = np.stack(channels, axis=2)
+                    processed_flows.append(resized_frame)
 
-        # Pad or trim
+            elif self.preprocessing_mode == 'crop':
+                if H_new > H_old or W_new > W_old:
+                    raise ValueError("Crop size must be smaller than original frame size.")
+                
+                top, left = self._get_crop_coordinates(H_old, W_old, H_new, W_new, self.crop_location)
+
+                for t in range(T):
+                    frame = flow_sequence[t]
+                    cropped_frame = frame[top:top+H_new, left:left+W_new, :]
+                    processed_flows.append(cropped_frame)
+            
+            flow_sequence = np.array(processed_flows)
+
+        flow_tensor = torch.from_numpy(flow_sequence).permute(0, 3, 1, 2).float()
+
         T = flow_tensor.shape[0]
         if T > self.sequence_length:
             flow_tensor = flow_tensor[:self.sequence_length]
@@ -135,7 +170,7 @@ def validate(model, dataloader, criterion, device):
     avg_val_loss = val_loss / len(dataloader)
     accuracy = 100 * correct_predictions / total_predictions
 
-    f1 = f1_score(all_labels, all_preds, average='macro') * 100  # 가중 평균 F1 score
+    f1 = f1_score(all_labels, all_preds, average='macro') * 100
 
     return avg_val_loss, accuracy, f1
 
@@ -169,10 +204,9 @@ def test_classifier(model, dataloader, criterion, device):
     avg_test_loss = test_loss / len(dataloader)
     accuracy = 100 * correct_predictions / total_predictions
 
-    f1 = f1_score(all_labels, all_preds, average='macro') * 100  # 가중 평균 F1 score
+    f1 = f1_score(all_labels, all_preds, average='macro') * 100
 
     return avg_test_loss, accuracy, f1
-
 
 def train_classifier(args):
     wandb.init(project="optical-flow-classification", config=args)
@@ -189,7 +223,6 @@ def train_classifier(args):
         print("[INFO] 현재 메모리 상태 요약:\n", torch.cuda.memory_summary(device=None, abbreviated=True))
 
     input_dim = 2
-    # hidden_dims = [16, 32]
     hidden_dims = [32]
     kernel_size = 3
     n_layers = 1
@@ -197,14 +230,18 @@ def train_classifier(args):
     learning_rate = args.learning_rate
     num_epochs = args.epochs
     batch_size = args.batch_size
-    weight_decay = args.weight_decay # weight_decay 인자 추가
+    weight_decay = args.weight_decay
+    patience = args.patience
+    dropout_rate = args.dropout_rate
 
     resize_tuple = (args.resize_h, args.resize_w) if args.resize_h and args.resize_w else None
 
     full_dataset = OpticalFlowDataset(
         data_dir=args.data_dir,
         sequence_length=args.sequence_length,
-        resize_to=resize_tuple
+        resize_to=resize_tuple,
+        preprocessing_mode=args.preprocessing_mode,
+        crop_location=args.crop_location
     )
 
     print(f"불러온 전체 데이터 샘플 수: {len(full_dataset)}")
@@ -244,7 +281,6 @@ def train_classifier(args):
     indices = np.arange(len(full_dataset))
     labels = [sample[1] for sample in full_dataset.samples]
 
-    # Stratified split into train and temp (val + test)
     train_indices, temp_indices, _, temp_labels = train_test_split(
         indices, labels,
         test_size=(val_ratio + test_ratio),
@@ -252,7 +288,6 @@ def train_classifier(args):
         stratify=labels
     )
 
-    # Stratified split of temp into val and test
     val_indices, test_indices, _, _ = train_test_split(
         temp_indices, temp_labels,
         test_size=(test_ratio / (val_ratio + test_ratio)),
@@ -266,7 +301,6 @@ def train_classifier(args):
 
     print(f"[INFO] 데이터셋 분할: 학습 {len(train_dataset)}개, 검증 {len(val_dataset)}개, 테스트 {len(test_dataset)}개")
 
-    # 각 데이터셋의 클래스 비율 확인
     train_labels = [full_dataset.samples[i][1] for i in train_dataset.indices]
     val_labels = [full_dataset.samples[i][1] for i in val_dataset.indices]
     test_labels = [full_dataset.samples[i][1] for i in test_dataset.indices]
@@ -279,29 +313,18 @@ def train_classifier(args):
     print(f"[INFO] Validation dataset class distribution: {sorted(val_distribution.items())}")
     print(f"[INFO] Test dataset class distribution: {sorted(test_distribution.items())}")
 
-    # train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    # 클래스별 샘플 수 계산
     label_counts = Counter(label for _, label in full_dataset.samples)
-
-    # 전체 샘플 가중치 계산
     sample_weights = [1.0 / label_counts[label] for _, label in full_dataset.samples]
-
-    # train_dataset에서 사용할 샘플 가중치만 추출
     train_indices = train_dataset.indices
     train_weights = [sample_weights[i] for i in train_indices]
-
-    # 샘플러 생성
     sampler = WeightedRandomSampler(train_weights, num_samples=len(train_indices), replacement=True)
 
-    # DataLoader 정의
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, sampler=sampler)
-
     val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
     test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
-    model = ConvGRUClassifier(input_dim, hidden_dims, kernel_size, n_layers, num_classes_for_model).to(device)
+    model = ConvGRUClassifier(input_dim, hidden_dims, kernel_size, n_layers, num_classes_for_model, dropout_rate=dropout_rate).to(device)
     criterion = nn.CrossEntropyLoss()
-    # weight_decay 인자를 optimizer에 추가했습니다.
     optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
     wandb.watch(model, log="all")
@@ -329,7 +352,8 @@ def train_classifier(args):
 
     print("Starting training...")
     best_val_accuracy = -1.0
-    global_step = 0 # 전역 스텝 변수 추가
+    epochs_no_improve = 0
+    global_step = 0
 
     for epoch in range(num_epochs):
         model.train()
@@ -352,9 +376,8 @@ def train_classifier(args):
             train_total_predictions += labels.size(0)
             train_correct_predictions += (predicted == labels).sum().item()
 
-            # WandB에 배치 손실 로깅 (전역 스텝 사용)
             wandb.log({"batch/train_loss": loss.item()}, step=global_step)
-            global_step += 1 # 스텝 증가
+            global_step += 1
 
             del inputs, labels, outputs, predicted, loss
             torch.cuda.empty_cache()
@@ -363,7 +386,6 @@ def train_classifier(args):
         epoch_train_loss = train_running_loss / len(train_dataloader)
         epoch_train_accuracy = 100 * train_correct_predictions / train_total_predictions
         print(f"Epoch {epoch+1}/{num_epochs} - Train Loss: {epoch_train_loss:.4f}, Train Acc: {epoch_train_accuracy:.2f}%")
-        # WandB에 에포크 결과 로깅 (마지막 전역 스텝 사용)
         wandb.log({"epoch/train_loss": epoch_train_loss, "epoch/train_accuracy": epoch_train_accuracy}, step=global_step - 1)
 
         val_loss, val_accuracy, val_f1 = validate(model, val_dataloader, criterion, device)
@@ -372,14 +394,21 @@ def train_classifier(args):
 
         if val_accuracy > best_val_accuracy:
             best_val_accuracy = val_accuracy
+            epochs_no_improve = 0
             torch.save(model.state_dict(), args.model_save_path)
             print(f"👍 Best validation accuracy improved. Model saved to {args.model_save_path}")
             wandb.run.summary["best_val_accuracy"] = best_val_accuracy
+        else:
+            epochs_no_improve += 1
+
+        if epochs_no_improve >= patience:
+            print(f"[INFO] Early stopping triggered after {patience} epochs with no improvement.")
+            break
 
     print("Training complete.")
 
     print("Starting final testing...")
-    # model.load_state_dict(torch.load(args.model_save_path)) # Best 모델로 테스트하려면 이 줄의 주석을 해제
+    model.load_state_dict(torch.load(args.model_save_path))
     test_loss, test_accuracy, test_f1 = test_classifier(model, test_dataloader, criterion, device)
     print(f"Final Test Loss: {test_loss:.4f}, Final Test Acc: {test_accuracy:.2f}%, Final Test F1: {test_f1:.2f}%")
     wandb.log({"final_test_loss": test_loss, "final_test_accuracy": test_accuracy, "final_test_f1": test_f1})
@@ -391,13 +420,19 @@ if __name__ == '__main__':
     parser.add_argument('--data_dir', type=str, default='./saved_optical_flow', help='Directory containing the class/seq structured optical flow .npy files')
     parser.add_argument('--num_classes', type=int, default=3, help='Number of classes for classification. Will be automatically adjusted if mismatch with dataset.')
     parser.add_argument('--sequence_length', type=int, default=10, help='Fixed length of optical flow sequences for training')
-    parser.add_argument('--epochs', type=int, default=100, help='Number of training epochs') # 에포크 수 100으로 변경
+    parser.add_argument('--epochs', type=int, default=100, help='Number of training epochs')
     parser.add_argument('--batch_size', type=int, default=1, help='Batch size for training')
     parser.add_argument('--learning_rate', type=float, default=0.001, help='Learning rate for optimizer')
-    parser.add_argument('--weight_decay', type=float, default=1e-5, help='Weight decay (L2 regularization) for optimizer') # weight_decay 인자 추가
+    parser.add_argument('--weight_decay', type=float, default=1e-5, help='Weight decay (L2 regularization) for optimizer')
+    parser.add_argument('--patience', type=int, default=10, help='Patience for early stopping')
+    parser.add_argument('--dropout_rate', type=float, default=0.5, help='Dropout rate for the classifier')
     parser.add_argument('--model_save_path', type=str, default='./convgru_classifier.pth', help='Path to save the trained model')
-    parser.add_argument('--resize_h', type=int, default=None, help='Resize height (H) for input frames')
-    parser.add_argument('--resize_w', type=int, default=None, help='Resize width (W) for input frames')
+    parser.add_argument('--resize_h', type=int, default=None, help='Resize/Crop height (H) for input frames')
+    parser.add_argument('--resize_w', type=int, default=None, help='Resize/Crop width (W) for input frames')
+    parser.add_argument('--preprocessing_mode', type=str, default='resize', choices=['resize', 'crop'], help='Preprocessing mode: resize or crop')
+    parser.add_argument('--crop_location', type=str, default='center', 
+                        choices=['top-left', 'top-center', 'top-right', 'middle-left', 'center', 'middle-right', 'bottom-left', 'bottom-center', 'bottom-right', 'random'], 
+                        help='Crop location if preprocessing_mode is crop.')
 
     args = parser.parse_args()
     train_classifier(args)

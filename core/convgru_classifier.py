@@ -89,21 +89,17 @@ class ConvGRU(nn.Module):
         return hidden_state[-1]
 
 class ConvGRUClassifier(nn.Module):
-    def __init__(self, input_dim, hidden_dims, kernel_size, n_layers, num_classes, bias=True):
+    def __init__(self, input_dim, hidden_dims, kernel_size, n_layers, num_classes, dropout_rate=0.5, bias=True):
         super(ConvGRUClassifier, self).__init__()
         self.conv_gru = ConvGRU(input_dim, hidden_dims, kernel_size, n_layers, bias)
-        # Classification head
-        # The output of ConvGRU is (batch_size, hidden_dims[-1], H, W)
-        # We need to flatten and then pass through a linear layer
-        # Let's use AdaptiveAvgPool2d to handle variable H, W and then a linear layer
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+        self.dropout = nn.Dropout(dropout_rate)
         self.fc = nn.Linear(hidden_dims[-1], num_classes)
 
     def forward(self, x):
-        # x is (batch_size, sequence_length, channels, height, width)
-        # ConvGRU expects (batch_size, sequence_length, channels, height, width)
-        conv_gru_output = self.conv_gru(x) # (batch_size, hidden_dims[-1], H, W)
-        pooled_output = self.avgpool(conv_gru_output) # (batch_size, hidden_dims[-1], 1, 1)
-        flattened_output = pooled_output.view(pooled_output.size(0), -1) # (batch_size, hidden_dims[-1])
-        logits = self.fc(flattened_output) # (batch_size, num_classes)
+        conv_gru_output = self.conv_gru(x)
+        pooled_output = self.avgpool(conv_gru_output)
+        flattened_output = pooled_output.view(pooled_output.size(0), -1)
+        dropped_output = self.dropout(flattened_output)
+        logits = self.fc(dropped_output)
         return logits

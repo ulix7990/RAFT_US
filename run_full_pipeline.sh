@@ -7,24 +7,39 @@ set -e
 
 # Base directory of the RAFT_US project
 RAFT_PROJECT_DIR="."
-
 RAFT_DATA_DIR="."
 
-# Directory containing your original video files (e.g., where your '03', '04', '07' folders are)
+# Directory containing your original video files
 INPUT_VIDEO_DIR="/media/cvtech/백업자료/데이터셋/rmc_video"
 
 # Directory where the prepared videos (renamed) will be stored
 PREPARED_VIDEO_DIR="${RAFT_DATA_DIR}/data/prepared_raft_videos"
 
-# Directory for processed sequences (output of the new combined script)
+# Directory for processed sequences (output of optical flow extraction)
 PROCESSED_SEQUENCES_DIR="${RAFT_DATA_DIR}/data/processed_sequences"
 
 # Path to your trained RAFT model checkpoint file
-# !!! IMPORTANT: REPLACE THIS WITH YOUR ACTUAL MODEL PATH !!!
-RAFT_MODEL_PATH="${RAFT_PROJECT_DIR}/models/raft-sintel.pth" # Example path, change this!
+RAFT_MODEL_PATH="${RAFT_PROJECT_DIR}/models/raft-sintel.pth"
 
 # Path to save the trained classifier model
 CLASSIFIER_MODEL_SAVE_PATH="${RAFT_PROJECT_DIR}/convgru_classifier.pth"
+
+# --- Processing & Training Settings --- #
+# Height and width for ROI extraction and training input
+CROP_H=128
+CROP_W=128
+
+# Classifier training settings
+PREPROCESSING_MODE="crop"  # Preprocessing mode: 'resize' or 'crop'
+CROP_LOCATION="bottom-center"     # Crop location: 'random', 'center', 'top-left', etc.
+PATIENCE=10                # Patience for early stopping
+DROPOUT_RATE=0.5           # Dropout rate for the classifier
+EPOCHS=100
+BATCH_SIZE=4
+LEARNING_RATE=0.001
+WEIGHT_DECAY=1e-5
+NUM_CLASSES=3
+SEQUENCE_LENGTH=10
 
 # --- Script Execution Logic --- #
 
@@ -60,9 +75,9 @@ if (( START_STEP <= 2 && END_STEP >= 2 )); then
         --input_path "${PREPARED_VIDEO_DIR}" \
         --output_path "${PROCESSED_SEQUENCES_DIR}" \
         --interval 5 \
-        --sequence_length 10 \
-        --roi_width 128 \
-        --roi_height 128
+        --sequence_length ${SEQUENCE_LENGTH} \
+        --roi_width ${CROP_W} \
+        --roi_height ${CROP_H}
     echo "Step 2 complete."
 fi
 
@@ -71,15 +86,20 @@ if (( START_STEP <= 3 && END_STEP >= 3 )); then
     echo "--- Step 3: Training the classifier ---"
     python "${RAFT_PROJECT_DIR}/train_classifier.py" \
         --data_dir "${PROCESSED_SEQUENCES_DIR}" \
-        --resize_h 256 --resize_w 448 \
-        --num_classes 3 \
-        --sequence_length 10 \
-        --epochs 100 \
-        --batch_size 4 \
+        --resize_h ${CROP_H} \
+        --resize_w ${CROP_W} \
+        --preprocessing_mode "${PREPROCESSING_MODE}" \
+        --crop_location "${CROP_LOCATION}" \
+        --num_classes ${NUM_CLASSES} \
+        --sequence_length ${SEQUENCE_LENGTH} \
+        --epochs ${EPOCHS} \
+        --batch_size ${BATCH_SIZE} \
         --model_save_path "${CLASSIFIER_MODEL_SAVE_PATH}" \
-        --learning_rate 0.001 \
-        --weight_decay 1e-5
-    echo "Step 4 complete."
+        --learning_rate ${LEARNING_RATE} \
+        --weight_decay ${WEIGHT_DECAY} \
+        --patience ${PATIENCE} \
+        --dropout_rate ${DROPOUT_RATE}
+    echo "Step 3 complete."
 fi
 
 echo "Full pipeline execution finished successfully for selected steps!"
