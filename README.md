@@ -41,14 +41,16 @@
 
 - **처리 및 학습 설정**
   - `CROP_H`, `CROP_W`: 처리할 프레임의 높이와 너비. 2단계의 ROI 크기와 3단계의 학습 입력 크기로 사용됩니다.
-  - `PREPROCESSING_MODE`: 3단계 학습 시 사용할 데이터 전처리 방식을 선택합니다.
+  - `PREPROCESSING_MODE`: 3단계 학습 시 사용할 데이터 전처리 방식을 선택합니다. (권장: crop)
     - `'resize'`: 전체 프레임을 `CROP_H`, `CROP_W` 크기로 리사이즈합니다.
     - `'crop'`: 프레임의 특정 부분을 `CROP_H`, `CROP_W` 크기로 잘라냅니다.
   - `CROP_LOCATION`: `PREPROCESSING_MODE`가 `'crop'`일 때 사용됩니다.
-    - **특정 위치:** `top-left`, `top-center`, `top-right`, `middle-left`, `center`, `middle-right`, `bottom-left`, `bottom-center`, `bottom-right` 중 하나를 선택합니다.
-    - **무작위 위치:** `random`으로 설정 시, 학습 중 9개 위치 중 하나를 무작위로 선택하여 데이터 증강 효과를 줍니다. (권장)
+    - **특정 위치:** `top-left`, `top-center`, `top-right`, `middle-left`, `center`, `middle-right`, `bottom-left`, `bottom-center`, `bottom-right` 중 하나를 선택합니다. (권장: bottom-center)
+    - **무작위 위치:** `random`으로 설정 시, 학습 중 9개 위치 중 하나를 무작위로 선택하여 데이터 증강 효과를 줍니다.
   - `PATIENCE`: 조기 종료(Early Stopping)를 위한 에포크 수. 이 값만큼 검증 성능 향상이 없으면 학습을 중단합니다.
   - `DROPOUT_RATE`: 학습 시 사용할 드롭아웃 비율.
+  - `N_LAYERS`: ConvGRU 모델의 레이어 수.
+  - `HIDDEN_DIMS`: 각 ConvGRU 레이어의 은닉층 크기. 공백으로 구분된 정수 리스트이며, 리스트의 길이는 `N_LAYERS`와 일치해야 합니다. (예: "32 64")
   - `EPOCHS`, `BATCH_SIZE`, `LEARNING_RATE` 등: 일반적인 학습 관련 하이퍼파라미터.
 
 ### 2. 실행

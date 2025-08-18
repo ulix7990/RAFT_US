@@ -40,6 +40,8 @@ LEARNING_RATE=0.001
 WEIGHT_DECAY=1e-5
 NUM_CLASSES=3
 SEQUENCE_LENGTH=10
+N_LAYERS=2
+HIDDEN_DIMS="32 64"
 
 # --- Script Execution Logic --- #
 
@@ -98,7 +100,9 @@ if (( START_STEP <= 3 && END_STEP >= 3 )); then
         --learning_rate ${LEARNING_RATE} \
         --weight_decay ${WEIGHT_DECAY} \
         --patience ${PATIENCE} \
-        --dropout_rate ${DROPOUT_RATE}
+        --dropout_rate ${DROPOUT_RATE} \
+        --n_layers ${N_LAYERS} \
+        --hidden_dims ${HIDDEN_DIMS}
     echo "Step 3 complete."
 fi
 

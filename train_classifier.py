@@ -223,9 +223,12 @@ def train_classifier(args):
         print("[INFO] 현재 메모리 상태 요약:\n", torch.cuda.memory_summary(device=None, abbreviated=True))
 
     input_dim = 2
-    hidden_dims = [32]
+    hidden_dims = args.hidden_dims
     kernel_size = 3
-    n_layers = 1
+    n_layers = args.n_layers
+    
+    if len(hidden_dims) != n_layers:
+        raise ValueError("The number of hidden_dims must be equal to n_layers.")
 
     learning_rate = args.learning_rate
     num_epochs = args.epochs
@@ -426,6 +429,8 @@ if __name__ == '__main__':
     parser.add_argument('--weight_decay', type=float, default=1e-5, help='Weight decay (L2 regularization) for optimizer')
     parser.add_argument('--patience', type=int, default=10, help='Patience for early stopping')
     parser.add_argument('--dropout_rate', type=float, default=0.5, help='Dropout rate for the classifier')
+    parser.add_argument('--hidden_dims', type=int, nargs='+', default=[32], help='List of hidden dimensions for each ConvGRU layer')
+    parser.add_argument('--n_layers', type=int, default=1, help='Number of ConvGRU layers')
     parser.add_argument('--model_save_path', type=str, default='./convgru_classifier.pth', help='Path to save the trained model')
     parser.add_argument('--resize_h', type=int, default=None, help='Resize/Crop height (H) for input frames')
     parser.add_argument('--resize_w', type=int, default=None, help='Resize/Crop width (W) for input frames')
