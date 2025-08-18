@@ -2,9 +2,9 @@
 
 이 프로젝트는 RAFT (Recurrent All-Pairs Field Transforms for Optical Flow)를 사용하여 비디오에서 Optical Flow를 추출하고, 이를 ConvGRU 기반의 분류 모델에 입력하여 비디오를 분류하는 전체 파이프라인을 제공합니다.
 
-## 파이프라인 (`run_full_pipeline.sh`)
+## 파이프라인 (`run_full_training_pipeline.sh`)
 
-`run_full_pipeline.sh` 스크립트는 전체 과정을 자동화하며, 3개의 주요 단계로 구성됩니다.
+`run_full_training_pipeline.sh` 스크립트는 전체 과정을 자동화하며, 3개의 주요 단계로 구성됩니다.
 
 ### 1단계: 비디오 준비 (Prepare Videos)
 
@@ -27,7 +27,7 @@
 
 ### 1. 설정
 
-`run_full_pipeline.sh` 파일을 열어 상단의 설정 섹션을 필요에 맞게 수정합니다.
+`run_full_training_pipeline.sh` 파일을 열어 상단의 설정 섹션을 필요에 맞게 수정합니다.
 
 #### 주요 설정 변수
 
@@ -60,7 +60,7 @@
 - **전체 파이프라인 실행:**
 
   ```bash
-  bash run_full_pipeline.sh
+  bash run_full_training_pipeline.sh
   ```
 
 - **특정 단계만 실행:**
