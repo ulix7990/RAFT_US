@@ -170,7 +170,7 @@ def validate(model, dataloader, criterion, device):
     avg_val_loss = val_loss / len(dataloader)
     accuracy = 100 * correct_predictions / total_predictions
 
-    f1 = f1_score(all_labels, all_preds, average='macro') * 100
+    f1 = f1_score(all_labels, all_preds, average='weighted') * 100
 
     return avg_val_loss, accuracy, f1
 
@@ -204,7 +204,7 @@ def test_classifier(model, dataloader, criterion, device):
     avg_test_loss = test_loss / len(dataloader)
     accuracy = 100 * correct_predictions / total_predictions
 
-    f1 = f1_score(all_labels, all_preds, average='macro') * 100
+    f1 = f1_score(all_labels, all_preds, average='weighted') * 100
 
     return avg_test_loss, accuracy, f1
 
